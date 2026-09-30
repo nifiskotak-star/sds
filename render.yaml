@@ -1,0 +1,10 @@
+# render.yaml
+services:
+  - type: web
+    name: load-tester
+    env: docker
+    plan: starter   # $7/мес. На free плане k6 не потянет больше 100 RPS
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000

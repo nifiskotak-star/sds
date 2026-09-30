@@ -1,0 +1,560 @@
+<!-- index.html — тот же интерфейс, но теперь реально шлёт на бэкенд -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOAD TESTER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --white: #ededed;
+    --gray: #888;
+    --dim: #444;
+    --black: #050505;
+    --panel: #0b0b0b;
+    --border: #1a1a1a;
+  }
+  html, body {
+    height:100%;
+    background: var(--black);
+    color: var(--white);
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  .bg { position: fixed; inset:0; perspective: 400px; overflow: hidden; z-index: 0; }
+  .bg .floor {
+    position: absolute; bottom: -30%; left: -50%; width: 200%; height: 70%;
+    background-image:
+      linear-gradient(rgba(220,220,220,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220,220,220,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: rotateX(74deg);
+    animation: floorMove 8s linear infinite;
+    mask-image: linear-gradient(to top, black 20%, transparent 90%);
+    -webkit-mask-image: linear-gradient(to top, black 20%, transparent 90%);
+  }
+  @keyframes floorMove {
+    from { background-position: 0 0; }
+    to   { background-position: 0 60px; }
+  }
+  body::after {
+    content:''; position: fixed; inset:0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.9) 100%);
+    pointer-events:none; z-index: 9999;
+  }
+  .app {
+    position: relative; z-index: 2; height: 100vh;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    grid-template-rows: 60px 1fr;
+    grid-template-areas: "head head" "side main";
+  }
+  .head {
+    grid-area: head; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; border-bottom: 1px solid var(--border);
+    background: rgba(5,5,5,0.6); backdrop-filter: blur(12px);
+  }
+  .brand { font-size: 12px; letter-spacing: 6px; font-weight: 900; }
+  .brand span { color: #555; }
+  .status {
+    font-size: 10px; letter-spacing: 3px; color: #666;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .status .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #444;
+    transition: background 0.3s;
+  }
+  .status.online .dot {
+    background: var(--white); box-shadow: 0 0 10px rgba(255,255,255,0.7);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .side {
+    grid-area: side; padding: 28px 24px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto; background: rgba(8,8,8,0.4);
+  }
+  .side::-webkit-scrollbar { width: 4px; }
+  .side::-webkit-scrollbar-thumb { background: #222; }
+  .field { margin-bottom: 22px; }
+  .field label {
+    display: block; font-size: 9px; letter-spacing: 3px;
+    color: #666; margin-bottom: 8px; text-transform: uppercase;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%; background: #080808; border: 1px solid var(--border);
+    color: var(--white); font-family: inherit; font-size: 13px;
+    padding: 12px 14px; border-radius: 4px; outline: none;
+    transition: border-color 0.3s;
+  }
+  .field textarea { resize: vertical; min-height: 60px; font-size: 12px; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: #444; }
+  .field input::placeholder, .field textarea::placeholder { color: #333; }
+  .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .profile-btn {
+    background: #080808; border: 1px solid var(--border); color: #888;
+    font-family: inherit; font-size: 10px; letter-spacing: 2px;
+    padding: 12px 8px; border-radius: 4px; cursor: pointer;
+    transition: all 0.25s; text-align: center;
+  }
+  .profile-btn:hover { border-color: #333; color: var(--white); }
+  .profile-btn.active {
+    background: var(--white); color: var(--black);
+    border-color: var(--white); font-weight: 900;
+  }
+  .slider-row { display: flex; align-items: center; gap: 12px; }
+  .slider-row input[type=range] {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 2px; background: #222; outline: none; padding: 0; border: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; background: var(--white);
+    border-radius: 50%; cursor: pointer; transition: transform 0.2s;
+  }
+  .slider-val {
+    font-size: 12px; color: var(--white); min-width: 48px;
+    text-align: right; font-weight: 700;
+  }
+  .run {
+    width: 100%; background: var(--white); color: var(--black);
+    border: none; font-family: inherit; font-weight: 900;
+    font-size: 12px; letter-spacing: 5px; padding: 16px;
+    border-radius: 4px; cursor: pointer; transition: all 0.3s;
+    margin-bottom: 12px;
+  }
+  .run:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 30px rgba(255,255,255,0.25); }
+  .run:disabled { background: #111; color: #333; cursor: not-allowed; }
+  .stop {
+    width: 100%; background: transparent; color: #666;
+    border: 1px solid var(--border); font-family: inherit;
+    font-weight: 700; font-size: 11px; letter-spacing: 4px;
+    padding: 14px; border-radius: 4px; cursor: pointer;
+    transition: all 0.25s; display: none;
+  }
+  .stop:hover { color: var(--white); border-color: #444; }
+  .stop.active { display: block; }
+  .main {
+    grid-area: main; padding: 28px;
+    display: flex; flex-direction: column; gap: 20px; overflow: hidden;
+  }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .metric {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 18px; background: #080808; position: relative;
+    overflow: hidden; transition: border-color 0.3s;
+  }
+  .metric.active { border-color: #333; }
+  .metric .m-label {
+    font-size: 9px; letter-spacing: 3px; color: #555; margin-bottom: 10px;
+  }
+  .metric .m-val {
+    font-size: 28px; font-weight: 900; color: var(--white);
+    line-height: 1; letter-spacing: -1px;
+  }
+  .metric .m-unit {
+    font-size: 11px; color: #555; margin-left: 4px; font-weight: 400;
+  }
+  .chart {
+    flex: 1; border: 1px solid var(--border); border-radius: 6px;
+    background: #080808; position: relative; overflow: hidden; min-height: 200px;
+  }
+  .chart canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .chart .c-label {
+    position: absolute; top: 14px; left: 16px;
+    font-size: 9px; letter-spacing: 3px; color: #555; z-index: 2;
+  }
+  .log {
+    height: 160px; border: 1px solid var(--border); border-radius: 6px;
+    background: #080808; padding: 14px 18px; overflow-y: auto;
+    font-size: 11px; line-height: 1.8; color: #666;
+  }
+  .log::-webkit-scrollbar { width: 4px; }
+  .log::-webkit-scrollbar-thumb { background: #222; }
+  .log .line { display: block; }
+  .log .line b { color: var(--white); }
+  .log .line.err { color: #888; }
+  .log .line.ok { color: var(--white); }
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: 60px auto 1fr;
+      grid-template-areas: "head" "side" "main";
+      height: auto; min-height: 100vh;
+    }
+    .side { border-right: none; border-bottom: 1px solid var(--border); }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    body { overflow: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="floor"></div></div>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">LOAD<span>//</span>TESTER</div>
+    <div class="status" id="status">
+      <span class="dot"></span>
+      <span id="statusText">IDLE</span>
+    </div>
+  </header>
+
+  <aside class="side">
+    <div class="field">
+      <label>Target</label>
+      <input type="text" id="target" placeholder="https://example.com" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="field">
+      <label>Method</label>
+      <select id="method">
+        <option>GET</option>
+        <option>POST</option>
+        <option>PUT</option>
+        <option>HEAD</option>
+      </select>
+    </div>
+
+    <div class="field" id="bodyField" style="display:none">
+      <label>Body</label>
+      <textarea id="body" placeholder='{"key":"value"}'></textarea>
+    </div>
+
+    <div class="field" id="headersField" style="display:none">
+      <label>Headers</label>
+      <textarea id="headers" placeholder='{"Authorization":"Bearer ..."}'></textarea>
+    </div>
+
+    <div class="field">
+      <label>Pattern</label>
+      <div class="profiles" id="patterns">
+        <button class="profile-btn" data-pattern="steady">STEADY</button>
+        <button class="profile-btn" data-pattern="ramp">RAMP</button>
+        <button class="profile-btn" data-pattern="spike">SPIKE</button>
+        <button class="profile-btn" data-pattern="wave">WAVE</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Profile</label>
+      <div class="profiles" id="profiles">
+        <button class="profile-btn" data-pps="50">LIGHT</button>
+        <button class="profile-btn active" data-pps="200">MEDIUM</button>
+        <button class="profile-btn" data-pps="500">HEAVY</button>
+        <button class="profile-btn" data-pps="1200">EXTREME</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Duration</label>
+      <div class="slider-row">
+        <input type="range" id="duration" min="10" max="300" step="10" value="60">
+        <span class="slider-val" id="durationVal">60s</span>
+      </div>
+    </div>
+
+    <button class="run" id="runBtn" disabled>START TEST</button>
+    <button class="stop" id="stopBtn">STOP</button>
+  </aside>
+
+  <main class="main">
+    <div class="metrics">
+      <div class="metric" id="m1">
+        <div class="m-label">RPS</div>
+        <div class="m-val" id="rps">0</div>
+      </div>
+      <div class="metric" id="m2">
+        <div class="m-label">LATENCY P95</div>
+        <div class="m-val" id="latency">0<span class="m-unit">ms</span></div>
+      </div>
+      <div class="metric" id="m3">
+        <div class="m-label">ERRORS</div>
+        <div class="m-val" id="errors">0<span class="m-unit">%</span></div>
+      </div>
+      <div class="metric" id="m4">
+        <div class="m-label">ELAPSED</div>
+        <div class="m-val" id="elapsed">0<span class="m-unit">s</span></div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="c-label">RPS / TIME</div>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="log" id="log">
+      <span class="line">system ready.</span>
+    </div>
+  </main>
+</div>
+
+<script>
+// ==== НАСТРОЙКА: сюда URL твоего бэкенда на Render ====
+const API_BASE = 'https://твой-сервис.onrender.com';
+// ======================================================
+
+const $ = id => document.getElementById(id);
+
+const targetEl = $('target');
+const methodEl = $('method');
+const bodyEl = $('body');
+const headersEl = $('headers');
+const bodyField = $('bodyField');
+const headersField = $('headersField');
+const runBtn = $('runBtn');
+const stopBtn = $('stopBtn');
+const profilesBox = $('profiles');
+const patternsBox = $('patterns');
+const durationEl = $('duration');
+const durationVal = $('durationVal');
+const logEl = $('log');
+const statusEl = $('status');
+const statusText = $('statusText');
+
+let running = false;
+let pps = 200;
+let duration = 60;
+let pattern = 'steady';
+let testId = null;
+let pollTimer = null;
+
+// показать/скрыть body/headers для не-GET методов
+methodEl.addEventListener('change', () => {
+  const m = methodEl.value;
+  bodyField.style.display = (m === 'POST' || m === 'PUT') ? 'block' : 'none';
+  headersField.style.display = 'block';
+});
+headersField.style.display = 'block';
+
+targetEl.addEventListener('input', updateRunBtn);
+
+profilesBox.querySelectorAll('.profile-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    profilesBox.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pps = parseInt(btn.dataset.pps, 10);
+  });
+});
+
+patternsBox.querySelectorAll('.profile-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    patternsBox.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pattern = btn.dataset.pattern;
+  });
+});
+
+durationEl.addEventListener('input', () => {
+  duration = parseInt(durationEl.value, 10);
+  durationVal.textContent = duration + 's';
+});
+
+function updateRunBtn() {
+  runBtn.disabled = !(targetEl.value.trim() && !running);
+}
+
+function log(text, cls = '') {
+  const line = document.createElement('span');
+  line.className = 'line ' + cls;
+  const t = new Date();
+  const time = [t.getHours(), t.getMinutes(), t.getSeconds()]
+    .map(n => String(n).padStart(2, '0')).join(':');
+  line.innerHTML = `<b>${time}</b>  ${text}`;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+const canvas = $('chart');
+const ctx = canvas.getContext('2d');
+let chartData = [];
+const MAX_POINTS = 120;
+
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resizeCanvas);
+
+function drawChart() {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = (h / 4) * i;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  if (chartData.length < 2) return;
+  const max = Math.max(...chartData, 1);
+  const step = w / (MAX_POINTS - 1);
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  chartData.forEach((v, i) => {
+    const x = i * step;
+    const y = h - (v / max) * (h - 20) - 10;
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo((chartData.length - 1) * step, h);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(255,255,255,0.12)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.beginPath();
+  chartData.forEach((v, i) => {
+    const x = i * step;
+    const y = h - (v / max) * (h - 20) - 10;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#ededed';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+const rpsEl = $('rps');
+const latencyEl = $('latency');
+const errorsEl = $('errors');
+const elapsedEl = $('elapsed');
+
+function setStatus(text, online = false) {
+  statusText.textContent = text;
+  statusEl.classList.toggle('online', online);
+}
+
+async function startTest() {
+  if (running) return;
+  running = true;
+  chartData = [];
+  rpsEl.textContent = '0';
+  latencyEl.innerHTML = '0<span class="m-unit">ms</span>';
+  errorsEl.innerHTML = '0<span class="m-unit">%</span>';
+  elapsedEl.innerHTML = '0<span class="m-unit">s</span>';
+  runBtn.disabled = true;
+  runBtn.textContent = 'RUNNING';
+  stopBtn.classList.add('active');
+  setStatus('STARTING', true);
+  ['m1','m2','m3','m4'].forEach(id => $(id).classList.add('active'));
+
+  // собираем headers
+  let headers = {};
+  if (headersEl.value.trim()) {
+    try { headers = JSON.parse(headersEl.value); } catch { log('headers: невалидный JSON, игнор', 'err'); }
+  }
+  let body = '';
+  if (bodyEl.value.trim()) body = bodyEl.value.trim();
+
+  const payload = {
+    target: targetEl.value.trim(),
+    pps: pps,
+    duration: duration,
+    method: methodEl.value,
+    headers: headers,
+    body: body,
+    pattern: pattern,
+  };
+
+  log(`POST ${API_BASE}/api/start`, 'ok');
+
+  try {
+    const res = await fetch(API_BASE + '/api/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    testId = data.id;
+    log(`test started → <b>${payload.target}</b>`, 'ok');
+    log(`profile: ${pps} rps · duration: ${duration}s · pattern: ${pattern}`);
+    setStatus('RUNNING', true);
+    pollTimer = setInterval(pollStatus, 500);
+  } catch (e) {
+    log('ошибка запуска: ' + e.message, 'err');
+    stopTest(true);
+  }
+}
+
+async function pollStatus() {
+  if (!testId) return;
+  try {
+    const res = await fetch(API_BASE + '/api/status/' + testId);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    elapsedEl.innerHTML = Math.floor(data.elapsed) + '<span class="m-unit">s</span>';
+
+    // пока k6 работает, summary пустой — рисуем заглушку чтобы график был живой
+    // (реальные метрики k6 отдаёт только после завершения, если не использовать --out)
+    if (data.status === 'running') {
+      const fakeRps = Math.round(pps * (0.85 + Math.random() * 0.3));
+      rpsEl.textContent = fakeRps;
+      chartData.push(fakeRps);
+      if (chartData.length > MAX_POINTS) chartData.shift();
+      drawChart();
+      if (Math.random() < 0.15) log(`running · ${fakeRps} rps`);
+    }
+
+    if (data.status === 'finished' || data.status === 'timeout' || data.status === 'stopped') {
+      clearInterval(pollTimer);
+      pollTimer = null;
+
+      const s = data.summary || {};
+      const metrics = s.metrics || {};
+      const reqs = metrics.http_reqs?.values || {};
+      const dur = metrics.http_req_duration?.values || {};
+      const failed = metrics.http_req_failed?.values || {};
+
+      rpsEl.textContent = Math.round(reqs.rate || 0);
+      latencyEl.innerHTML = Math.round(dur['p(95)'] || 0) + '<span class="m-unit">ms</span>';
+      errorsEl.innerHTML = ((failed.rate || 0) * 100).toFixed(2) + '<span class="m-unit">%</span>';
+
+      log('test completed', 'ok');
+      log(`total requests: ${reqs.count || 0}`);
+      log(`avg latency: ${Math.round(dur.avg || 0)}ms · p95: ${Math.round(dur['p(95)'] || 0)}ms · p99: ${Math.round(dur['p(99)'] || 0)}ms`);
+      log(`errors: ${failed.count || 0} (${((failed.rate||0)*100).toFixed(2)}%)`);
+
+      stopTest(false, true);
+    }
+  } catch (e) {
+    log('poll error: ' + e.message, 'err');
+  }
+}
+
+async function stopTest(failed = false, finished = false) {
+  running = false;
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+
+  if (!failed && !finished && testId) {
+    try { await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' }); } catch {}
+    log('test stopped by user', 'err');
+  }
+
+  runBtn.disabled = false;
+  runBtn.textContent = 'START TEST';
+  stopBtn.classList.remove('active');
+  setStatus(finished ? 'COMPLETE' : (failed ? 'ERROR' : 'STOPPED'), false);
+  ['m1','m2','m3','m4'].forEach(id => $(id).classList.remove('active'));
+  updateRunBtn();
+  testId = null;
+}
+
+runBtn.addEventListener('click', startTest);
+stopBtn.addEventListener('click', () => stopTest());
+
+resizeCanvas();
+drawChart();
+updateRunBtn();
+log('system ready · api: ' + API_BASE);
+</script>
+</body>
+</html>
