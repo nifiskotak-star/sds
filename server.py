@@ -4,6 +4,7 @@ import time
 import json
 import os
 import tempfile
+import re
 import urllib.request
 import urllib.parse
 from fastapi import FastAPI, HTTPException
@@ -23,11 +24,6 @@ app.add_middleware(
 
 TESTS = {}
 
-# ============================================================
-# TELEGRAM TOKEN
-# ОСТАВИЛ ТВОЙ ТЕСТОВЫЙ. ПОСЛЕ /revoke В BotFather ЗАМЕНИ.
-# Или через Render Environment Variable TG_TOKEN
-# ============================================================
 TG_TOKEN = os.environ.get("TG_TOKEN", "8705350376:AAHwmgyNaoFgQfWPmb0_ZftRGAALz6t-qMU")
 
 
@@ -145,6 +141,52 @@ export default function () {{
     return script
 
 
+def parse_k6_summary(raw: str) -> dict:
+    """Ищет JSON-блок со summary в выводе k6."""
+    if not raw:
+        return {}
+    # k6 печатает summary в конце в виде объекта,
+    # начинающегося с {"metrics": {...}, ...}
+    # Пробуем разные подходы
+
+    # подход 1: последний JSON-объект в тексте
+    matches = list(re.finditer(r'\{"metrics":\s*\{', raw))
+    if matches:
+        start = matches[-1].start()
+        # ищем закрывающую скобку с балансом
+        depth = 0
+        i = start
+        in_string = False
+        escape = False
+        while i < len(raw):
+            ch = raw[i]
+            if escape:
+                escape = False
+                i += 1
+                continue
+            if ch == '\\':
+                escape = True
+                i += 1
+                continue
+            if ch == '"':
+                in_string = not in_string
+                i += 1
+                continue
+            if not in_string:
+                if ch == '{':
+                    depth += 1
+                elif ch == '}':
+                    depth -= 1
+                    if depth == 0:
+                        candidate = raw[start:i+1]
+                        try:
+                            return json.loads(candidate)
+                        except Exception:
+                            pass
+            i += 1
+    return {}
+
+
 async def run_k6(test_id: str, req: StartRequest):
     script = build_k6_script(req)
     tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False)
@@ -153,9 +195,11 @@ async def run_k6(test_id: str, req: StartRequest):
 
     summary_file = f"/tmp/k6sum_{test_id}.json"
 
+    # запускаем k6 БЕЗ --quiet чтобы поймать summary в stdout
+    # и С --summary-export (на случай если версия старая)
     proc = await asyncio.create_subprocess_exec(
         "k6", "run",
-        "--quiet",
+        "--summary-mode=full",
         f"--summary-export={summary_file}",
         tmp.name,
         stdout=asyncio.subprocess.PIPE,
@@ -165,31 +209,66 @@ async def run_k6(test_id: str, req: StartRequest):
     TESTS[test_id]["status"] = "running"
     TESTS[test_id]["started"] = time.time()
 
+    stdout_data = b""
+    stderr_data = b""
+
     try:
-        await asyncio.wait_for(proc.wait(), timeout=req.duration * 2 + 60)
+        stdout_data, stderr_data = await asyncio.wait_for(
+            proc.communicate(), timeout=req.duration * 2 + 90
+        )
         TESTS[test_id]["status"] = "finished"
     except asyncio.TimeoutError:
-        proc.kill()
+        try:
+            proc.kill()
+        except Exception:
+            pass
         TESTS[test_id]["status"] = "timeout"
     except Exception as e:
         TESTS[test_id]["status"] = "error"
         TESTS[test_id]["error"] = str(e)
     finally:
+        stdout_text = stdout_data.decode('utf-8', errors='ignore') if stdout_data else ""
+        stderr_text = stderr_data.decode('utf-8', errors='ignore') if stderr_data else ""
+
+        # лог в серверную консоль для отладки
+        print(f"=== k6 {test_id} STDOUT (last 3000) ===")
+        print(stdout_text[-3000:])
+        print(f"=== k6 {test_id} STDERR (last 1500) ===")
+        print(stderr_text[-1500:])
+
+        summary = {}
+
+        # 1. Пробуем из файла (старые версии k6)
         try:
             with open(summary_file, "r") as f:
                 summary = json.load(f)
-            TESTS[test_id]["summary"] = summary
+            print(f"=== summary from file: keys={list(summary.keys())}")
         except Exception as e:
-            TESTS[test_id]["summary"] = {"error": str(e)}
+            print(f"=== summary file failed: {e}")
+
+        # 2. Если файл пустой — парсим stdout
+        if not summary or not summary.get("metrics"):
+            print("=== trying parse from stdout")
+            summary = parse_k6_summary(stdout_text)
+            print(f"=== parsed keys: {list(summary.keys()) if summary else 'EMPTY'}")
+
+        # 3. Если всё равно пусто — пробуем найти metrics в stderr
+        if not summary or not summary.get("metrics"):
+            summary = parse_k6_summary(stderr_text)
+            print(f"=== parsed from stderr keys: {list(summary.keys()) if summary else 'EMPTY'}")
+
+        TESTS[test_id]["summary"] = summary
         TESTS[test_id]["finished"] = time.time()
+        TESTS[test_id]["stdout_tail"] = stdout_text[-2000:]
+        TESTS[test_id]["stderr_tail"] = stderr_text[-1000:]
+
         try: os.unlink(tmp.name)
         except Exception: pass
         try: os.unlink(summary_file)
         except Exception: pass
 
-        if req.tg_chat_id and TESTS[test_id].get("summary"):
-            s = TESTS[test_id]["summary"]
-            m = s.get("metrics", {})
+        if req.tg_chat_id and summary:
+            m = summary.get("metrics", {})
             reqs = m.get("http_reqs", {}).get("values", {})
             dur = m.get("http_req_duration", {}).get("values", {})
             failed = m.get("http_req_failed", {}).get("values", {})
@@ -243,6 +322,8 @@ async def status(test_id: str):
         resp["summary"] = t.get("summary", {})
         if t.get("error"):
             resp["error"] = t["error"]
+        if t.get("stdout_tail"):
+            resp["stdout_tail"] = t["stdout_tail"]
     return resp
 
 
