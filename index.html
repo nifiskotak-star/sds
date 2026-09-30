@@ -24,8 +24,6 @@
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
   }
-
-  /* ============ PRELOADER ============ */
   #preloader {
     position: fixed; inset:0;
     background: var(--black);
@@ -68,7 +66,6 @@
   .pre-log div { animation: lineIn 0.3s ease both; }
   @keyframes lineIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
 
-  /* ============ BG ============ */
   .bg { position: fixed; inset:0; perspective: 400px; overflow: hidden; z-index: 0; }
   .bg .floor {
     position: absolute; bottom: -30%; left: -50%; width: 200%; height: 70%;
@@ -91,7 +88,6 @@
     pointer-events:none; z-index: 9999;
   }
 
-  /* ============ APP ============ */
   .app {
     position: relative; z-index: 2; height: 100vh;
     display: grid;
@@ -285,7 +281,6 @@
   .log .line.ok { color: var(--ok); }
   .log .line.warn { color: var(--warn); }
 
-  /* ============ MODAL REPORT ============ */
   .modal-overlay {
     position: fixed; inset:0; background: rgba(0,0,0,0.88);
     backdrop-filter: blur(10px); z-index: 9000;
@@ -381,7 +376,6 @@
   .report-btn.primary { background: var(--white); color: var(--black); border-color: var(--white); font-weight: 900; }
   .report-btn.primary:hover { background: #fff; }
 
-  /* history button in header */
   .head-right {
     display: flex; align-items: center; gap: 14px;
   }
@@ -410,7 +404,6 @@
 </head>
 <body>
 
-<!-- PRELOADER -->
 <div id="preloader">
   <div class="pre-logo">LOAD<span>//</span>TESTER</div>
   <div class="pre-bar"></div>
@@ -551,17 +544,12 @@
   </main>
 </div>
 
-<!-- REPORT MODAL -->
 <div class="modal-overlay" id="reportModal">
   <div class="modal-report" id="reportBody"></div>
 </div>
 
 <script>
-// ============================================================
-// API_BASE — адрес бэкенда. Меняй если переедешь.
-// ============================================================
 const API_BASE = 'https://sds-s5j9.onrender.com';
-// ============================================================
 
 const $ = id => document.getElementById(id);
 
@@ -597,9 +585,7 @@ let testId = null;
 let pollTimer = null;
 let lastReport = null;
 
-// ============================================================
-// ПРЕЛОАДЕР
-// ============================================================
+// ============ PRELOADER ============
 const preLogLines = [
   'initializing core...',
   'loading k6 engine...',
@@ -626,9 +612,7 @@ const preTimer = setInterval(() => {
   preIdx++;
 }, 450);
 
-// ============================================================
-// АНАЛИЗ ТАРГЕТА
-// ============================================================
+// ============ АНАЛИЗ ТАРГЕТА ============
 function analyzeTarget(url) {
   const raw = url.trim();
   if (!raw) return null;
@@ -644,7 +628,6 @@ function analyzeTarget(url) {
     reason: []
   };
 
-  // IP?
   if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(raw)) {
     result.type = 'ip';
     result.typeName = 'IP-адрес';
@@ -668,7 +651,6 @@ function analyzeTarget(url) {
   const path = u.pathname;
   const port = u.port;
 
-  // API?
   if (/\/api\//i.test(path) || /^api\./i.test(host) || port === '8080' || port === '3000' || port === '5000') {
     result.type = 'api';
     result.typeName = 'API';
@@ -680,7 +662,6 @@ function analyzeTarget(url) {
     return result;
   }
 
-  // известные крупные
   const big = ['google.com','youtube.com','facebook.com','amazon.com','microsoft.com','apple.com','cloudflare.com','twitter.com','instagram.com','tiktok.com','github.com'];
   if (big.some(g => host === g || host.endsWith('.' + g))) {
     result.type = 'big';
@@ -692,7 +673,6 @@ function analyzeTarget(url) {
     return result;
   }
 
-  // локальный
   if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
     result.type = 'local';
     result.typeName = 'Локальная сеть';
@@ -700,10 +680,9 @@ function analyzeTarget(url) {
     return result;
   }
 
-  // example.com — разрешено
   if (host === 'example.com' || host.endsWith('.example.com')) {
     result.typeName = 'Тестовый домен';
-    result.reason.push('example.com — официальный тестовый домен. Идеален для демо.');
+    result.reason.push('example.com — официальный тестовый домен.');
     result.reason.push('MEDIUM + STEADY, 30 сек — базовый сценарий.');
     return result;
   }
@@ -730,16 +709,11 @@ function applyAnalysis(a) {
   });
 }
 
-// ============================================================
-// КОНСОЛЬ
-// ============================================================
 function consLog(label, data, color = '#ededed') {
   console.log('%c[LT] ' + label, `color:${color};font-weight:bold`, data);
 }
 
-// ============================================================
-// UI
-// ============================================================
+// ============ UI ============
 targetEl.addEventListener('input', () => {
   const a = analyzeTarget(targetEl.value);
   applyAnalysis(a);
@@ -797,9 +771,7 @@ function log(text, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// ============================================================
-// ГРАФИК
-// ============================================================
+// ============ ГРАФИК ============
 const canvas = $('chart');
 const ctx = canvas.getContext('2d');
 let chartData = [];
@@ -862,9 +834,7 @@ function setStatus(text, cls = '') {
   statusEl.className = 'status ' + cls;
 }
 
-// ============================================================
-// START TEST
-// ============================================================
+// ============ START ============
 async function startTest() {
   if (running) return;
 
@@ -986,34 +956,36 @@ function resetUI() {
   testId = null;
 }
 
-// ============================================================
-// ФИНАЛИЗАЦИЯ + ОТЧЁТ
-// ============================================================
+// ============ FINISH + ОТЧЁТ (ИСПРАВЛЕНО) ============
 function finishTest(data) {
   const s = data.summary || {};
   const m = s.metrics || {};
-  const reqs = m.http_reqs?.values || {};
-  const dur = m.http_req_duration?.values || {};
-  const failed = m.http_req_failed?.values || {};
-  const checks = m.checks?.values || {};
+
+  // новая версия k6 кладёт метрики ПРЯМО в объект, без .values
+  const reqs = m.http_reqs || {};
+  const dur = m.http_req_duration || {};
+  const failed = m.http_req_failed || {};
 
   const realRps = Math.round(reqs.rate || 0);
+  const total = reqs.count || 0;
   const p50 = Math.round(dur['p(50)'] || 0);
   const p95 = Math.round(dur['p(95)'] || 0);
   const p99 = Math.round(dur['p(99)'] || 0);
   const avg = Math.round(dur.avg || 0);
   const min = Math.round(dur.min || 0);
   const max = Math.round(dur.max || 0);
-  const errRate = ((failed.rate || 0) * 100).toFixed(2);
-  const errCount = failed.count || 0;
-  const okCount = (reqs.count || 0) - errCount;
+
+  // http_req_failed: value = доля ошибок (0..1), passes = сколько упало
+  const errRate = ((failed.value || 0) * 100).toFixed(2);
+  const errCount = failed.passes || 0;
+  const okCount = total - errCount;
 
   rpsEl.textContent = realRps;
   latencyEl.innerHTML = p95 + '<span class="m-unit">ms</span>';
   errorsEl.innerHTML = errRate + '<span class="m-unit">%</span>';
 
   log('──────── test completed ────────', 'ok');
-  log(`RPS: <b>${realRps}</b> · всего: <b>${reqs.count || 0}</b>`);
+  log(`RPS: <b>${realRps}</b> · всего: <b>${total}</b>`);
   log(`P50: <b>${p50}ms</b> · P95: <b>${p95}ms</b> · P99: <b>${p99}ms</b>`);
   log(`avg: ${avg}ms · min: ${min}ms · max: ${max}ms`);
   log(`успешных: <b>${okCount}</b> · ошибок: <b>${errCount}</b> (${errRate}%)`);
@@ -1029,7 +1001,7 @@ function finishTest(data) {
     timeout: timeout,
     strict: strict,
     rps: realRps,
-    total: reqs.count || 0,
+    total: total,
     p50, p95, p99, avg, min, max,
     errors: errCount,
     errorRate: parseFloat(errRate),
@@ -1044,9 +1016,7 @@ function finishTest(data) {
   resetUI();
 }
 
-// ============================================================
-// РЕКОМЕНДАЦИИ
-// ============================================================
+// ============ РЕКОМЕНДАЦИИ (ИСПРАВЛЕНО) ============
 function makeRecommendations(r) {
   const recs = [];
   let mood = 'good';
@@ -1058,7 +1028,7 @@ function makeRecommendations(r) {
     recs.push(`Ошибки ${r.errorRate}% — сервер близок к пределу.`);
     mood = 'warn';
   } else {
-    recs.push(`Ошибок почти нет (${r.errorRate}%). Сервер держит ${r.rps} RPS уверенно.`);
+    recs.push(`Ошибок почти нет (${r.errorRate}%).`);
   }
 
   if (r.p95 > 2000) {
@@ -1067,17 +1037,29 @@ function makeRecommendations(r) {
   } else if (r.p95 > 500) {
     recs.push(`P95 = ${r.p95}ms — приемлемо для внутреннего API, но для публичного сайта медленно.`);
     if (mood !== 'bad') mood = 'warn';
-  } else {
+  } else if (r.p95 > 0) {
     recs.push(`P95 = ${r.p95}ms — хороший отклик.`);
   }
 
-  if (r.max > r.p99 * 3 && r.max > 1000) {
-    recs.push(`Максимум ${r.max}ms — есть отдельные "хвосты". Возможно проблема с холодным стартом или GC.`);
+  if (r.rps > 0 && r.pps > 0) {
+    const ratio = Math.round(r.rps / r.pps * 100);
+    if (ratio < 50) {
+      recs.push(`Достигнуто только ${ratio}% от заданной нагрузки (${r.rps} из ${r.pps} RPS). Сервер не пропускает больше — упёрся в предел.`);
+      mood = 'bad';
+    } else if (ratio < 90) {
+      recs.push(`Достигнуто ${ratio}% от заданной нагрузки. Сервер близок к пределу.`);
+      if (mood !== 'bad') mood = 'warn';
+    } else {
+      recs.push(`Достигнуто ${ratio}% от заданной нагрузки — сервер справился.`);
+    }
   }
 
-  const totalReqs = r.total;
-  if (totalReqs > 0) {
-    recs.push(`Всего прогнали ${totalReqs} запросов за ${r.duration}s. Успешных ${r.okCount}, ошибок ${r.errors}.`);
+  if (r.max > r.p99 * 3 && r.max > 1000) {
+    recs.push(`Максимум ${r.max}ms против P99 ${r.p99}ms — есть "хвосты". Возможно холодный старт или GC.`);
+  }
+
+  if (r.total > 0) {
+    recs.push(`Всего прогнали ${r.total} запросов за ${r.duration}s. Успешных ${r.okCount}, ошибок ${r.errors}.`);
   }
 
   if (mood === 'good') {
@@ -1091,9 +1073,7 @@ function makeRecommendations(r) {
   return { mood, recs };
 }
 
-// ============================================================
-// МОДАЛКА ОТЧЁТА
-// ============================================================
+// ============ МОДАЛКА ОТЧЁТА ============
 function showReport(r) {
   const rec = makeRecommendations(r);
   const cls = rec.mood === 'good' ? 'good' : (rec.mood === 'bad' ? 'bad' : '');
@@ -1157,9 +1137,7 @@ function closeReport() {
   $('reportModal').classList.remove('active');
 }
 
-// ============================================================
-// ЭКСПОРТ
-// ============================================================
+// ============ ЭКСПОРТ ============
 function buildTextReport() {
   const r = lastReport;
   if (!r) return '';
@@ -1267,9 +1245,7 @@ function exportPDF() {
   consLog('PDF: открыл окно печати', {}, '#4ade80');
 }
 
-// ============================================================
-// ИСТОРИЯ
-// ============================================================
+// ============ ИСТОРИЯ ============
 const HISTORY_KEY = 'lt_history_v1';
 
 function saveHistory(r) {
@@ -1343,16 +1319,12 @@ function clearHistory() {
   log('история очищена', 'warn');
 }
 
-// ============================================================
-// КНОПКИ
-// ============================================================
+// ============ КНОПКИ ============
 runBtn.addEventListener('click', startTest);
 stopBtn.addEventListener('click', stopTest);
 $('historyBtn').addEventListener('click', showHistory);
 
-// ============================================================
-// INIT
-// ============================================================
+// ============ INIT ============
 resizeCanvas();
 drawChart();
 updateRunBtn();
