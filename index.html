@@ -10,9 +10,7 @@
   :root {
     --white: #ededed;
     --gray: #888;
-    --dim: #444;
     --black: #050505;
-    --panel: #0b0b0b;
     --border: #1a1a1a;
     --warn: #ffaa00;
     --ok: #4ade80;
@@ -26,6 +24,51 @@
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* ============ PRELOADER ============ */
+  #preloader {
+    position: fixed; inset:0;
+    background: var(--black);
+    z-index: 10000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 30px;
+    transition: opacity 0.8s ease, visibility 0.8s;
+  }
+  #preloader.hide { opacity:0; visibility:hidden; }
+  .pre-logo {
+    font-size: 32px; font-weight: 900;
+    letter-spacing: 10px; color: var(--white);
+    animation: prePulse 2s ease-in-out infinite;
+  }
+  .pre-logo span { color: #444; }
+  @keyframes prePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .pre-bar {
+    width: min(400px, 70vw); height: 2px;
+    background: #111; position: relative; overflow: hidden;
+  }
+  .pre-bar::after {
+    content:''; position: absolute; top:0; left:0; height:100%;
+    background: var(--white);
+    animation: preLoad 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes preLoad {
+    0% { width: 0%; }
+    20% { width: 18%; }
+    45% { width: 42%; }
+    70% { width: 68%; }
+    100% { width: 100%; }
+  }
+  .pre-log {
+    font-size: 11px; color: #666;
+    letter-spacing: 1px; text-align: left;
+    width: min(400px, 70vw); height: 100px;
+    overflow: hidden; line-height: 1.9;
+  }
+  .pre-log div { animation: lineIn 0.3s ease both; }
+  @keyframes lineIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+
+  /* ============ BG ============ */
   .bg { position: fixed; inset:0; perspective: 400px; overflow: hidden; z-index: 0; }
   .bg .floor {
     position: absolute; bottom: -30%; left: -50%; width: 200%; height: 70%;
@@ -47,13 +90,19 @@
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.9) 100%);
     pointer-events:none; z-index: 9999;
   }
+
+  /* ============ APP ============ */
   .app {
     position: relative; z-index: 2; height: 100vh;
     display: grid;
     grid-template-columns: 400px 1fr;
     grid-template-rows: 60px 1fr;
     grid-template-areas: "head head" "side main";
+    opacity: 0;
+    transition: opacity 0.6s ease;
   }
+  .app.show { opacity: 1; }
+
   .head {
     grid-area: head; display: flex; align-items: center; justify-content: space-between;
     padding: 0 28px; border-bottom: 1px solid var(--border);
@@ -75,14 +124,16 @@
   }
   .status.err .dot { background: var(--err); box-shadow: 0 0 10px var(--err); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
   .side {
-    grid-area: side; padding: 28px 24px;
+    grid-area: side; padding: 24px 22px;
     border-right: 1px solid var(--border);
     overflow-y: auto; background: rgba(8,8,8,0.4);
   }
   .side::-webkit-scrollbar { width: 4px; }
   .side::-webkit-scrollbar-thumb { background: #222; }
-  .field { margin-bottom: 22px; }
+
+  .field { margin-bottom: 18px; }
   .field label {
     display: block; font-size: 9px; letter-spacing: 3px;
     color: #666; margin-bottom: 8px; text-transform: uppercase;
@@ -90,52 +141,40 @@
   .field input, .field select, .field textarea {
     width: 100%; background: #080808; border: 1px solid var(--border);
     color: var(--white); font-family: inherit; font-size: 13px;
-    padding: 12px 14px; border-radius: 4px; outline: none;
+    padding: 11px 13px; border-radius: 4px; outline: none;
     transition: border-color 0.3s;
   }
-  .field textarea { resize: vertical; min-height: 60px; font-size: 12px; }
+  .field textarea { resize: vertical; min-height: 52px; font-size: 12px; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: #444; }
   .field input::placeholder, .field textarea::placeholder { color: #333; }
 
-  /* умная подсказка */
   .hint {
-    margin-top: 10px;
-    padding: 12px 14px;
+    margin-top: 10px; padding: 12px 14px;
     border: 1px solid #1e1e1e;
     border-left: 2px solid var(--warn);
     border-radius: 4px;
     background: #0a0a0a;
-    font-size: 11px;
-    line-height: 1.7;
-    color: #999;
+    font-size: 11px; line-height: 1.7; color: #999;
     display: none;
   }
-  .hint.show { display: block; animation: hintIn 0.3s ease; }
-  .hint b { color: var(--white); font-weight: 700; }
-  .hint .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #1a1a1a;
-    border-radius: 3px;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--warn);
-    margin-right: 8px;
-  }
+  .hint.show { display: block; }
   .hint.recommend { border-left-color: var(--ok); }
-  .hint.recommend .tag { color: var(--ok); }
   .hint.danger { border-left-color: var(--err); }
-  .hint.danger .tag { color: var(--err); }
-  @keyframes hintIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
+  .hint .tag {
+    display: inline-block; padding: 2px 8px;
+    background: #1a1a1a; border-radius: 3px;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--warn); margin-right: 8px;
   }
+  .hint.recommend .tag { color: var(--ok); }
+  .hint.danger .tag { color: var(--err); }
+  .hint b { color: var(--white); }
 
   .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .profile-btn {
     background: #080808; border: 1px solid var(--border); color: #888;
     font-family: inherit; font-size: 10px; letter-spacing: 2px;
-    padding: 12px 8px; border-radius: 4px; cursor: pointer;
+    padding: 11px 8px; border-radius: 4px; cursor: pointer;
     transition: all 0.25s; text-align: center; position: relative;
   }
   .profile-btn:hover { border-color: #333; color: var(--white); }
@@ -144,13 +183,11 @@
     border-color: var(--white); font-weight: 900;
   }
   .profile-btn.rec::after {
-    content:'★';
-    position: absolute;
-    top: 4px; right: 6px;
-    font-size: 8px;
-    color: var(--ok);
+    content:'★'; position: absolute;
+    top: 4px; right: 6px; font-size: 8px; color: var(--ok);
   }
   .profile-btn.active.rec::after { color: var(--black); }
+
   .slider-row { display: flex; align-items: center; gap: 12px; }
   .slider-row input[type=range] {
     flex: 1; -webkit-appearance: none; appearance: none;
@@ -159,18 +196,36 @@
   .slider-row input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     width: 14px; height: 14px; background: var(--white);
-    border-radius: 50%; cursor: pointer; transition: transform 0.2s;
+    border-radius: 50%; cursor: pointer;
   }
   .slider-val {
     font-size: 12px; color: var(--white); min-width: 48px;
     text-align: right; font-weight: 700;
   }
+
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; font-size: 11px; color: #999;
+  }
+  .toggle {
+    width: 34px; height: 18px; background: #111;
+    border: 1px solid var(--border); border-radius: 10px;
+    position: relative; cursor: pointer; transition: all 0.3s;
+  }
+  .toggle::after {
+    content:''; position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px; background: #555;
+    border-radius: 50%; transition: all 0.3s;
+  }
+  .toggle.on { background: #2a2a2a; border-color: #444; }
+  .toggle.on::after { left: 18px; background: var(--white); }
+
   .run {
     width: 100%; background: var(--white); color: var(--black);
     border: none; font-family: inherit; font-weight: 900;
-    font-size: 12px; letter-spacing: 5px; padding: 16px;
+    font-size: 12px; letter-spacing: 5px; padding: 15px;
     border-radius: 4px; cursor: pointer; transition: all 0.3s;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .run:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 30px rgba(255,255,255,0.25); }
   .run:disabled { background: #111; color: #333; cursor: not-allowed; }
@@ -178,44 +233,48 @@
     width: 100%; background: transparent; color: #666;
     border: 1px solid var(--border); font-family: inherit;
     font-weight: 700; font-size: 11px; letter-spacing: 4px;
-    padding: 14px; border-radius: 4px; cursor: pointer;
+    padding: 13px; border-radius: 4px; cursor: pointer;
     transition: all 0.25s; display: none;
   }
   .stop:hover { color: var(--white); border-color: #444; }
   .stop.active { display: block; }
+
   .main {
-    grid-area: main; padding: 28px;
-    display: flex; flex-direction: column; gap: 20px; overflow: hidden;
+    grid-area: main; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px; overflow: hidden;
   }
-  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .metric {
     border: 1px solid var(--border); border-radius: 6px;
-    padding: 18px; background: #080808; position: relative;
-    overflow: hidden; transition: border-color 0.3s;
+    padding: 16px; background: #080808;
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
   }
   .metric.active { border-color: #333; }
   .metric .m-label {
-    font-size: 9px; letter-spacing: 3px; color: #555; margin-bottom: 10px;
+    font-size: 9px; letter-spacing: 3px; color: #555; margin-bottom: 8px;
   }
   .metric .m-val {
-    font-size: 28px; font-weight: 900; color: var(--white);
+    font-size: 26px; font-weight: 900; color: var(--white);
     line-height: 1; letter-spacing: -1px;
   }
   .metric .m-unit {
     font-size: 11px; color: #555; margin-left: 4px; font-weight: 400;
   }
+
   .chart {
     flex: 1; border: 1px solid var(--border); border-radius: 6px;
-    background: #080808; position: relative; overflow: hidden; min-height: 200px;
+    background: #080808; position: relative; overflow: hidden; min-height: 180px;
   }
   .chart canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .chart .c-label {
-    position: absolute; top: 14px; left: 16px;
+    position: absolute; top: 12px; left: 14px;
     font-size: 9px; letter-spacing: 3px; color: #555; z-index: 2;
   }
+
   .log {
-    height: 160px; border: 1px solid var(--border); border-radius: 6px;
-    background: #080808; padding: 14px 18px; overflow-y: auto;
+    height: 140px; border: 1px solid var(--border); border-radius: 6px;
+    background: #080808; padding: 12px 16px; overflow-y: auto;
     font-size: 11px; line-height: 1.8; color: #666;
   }
   .log::-webkit-scrollbar { width: 4px; }
@@ -225,6 +284,116 @@
   .log .line.err { color: var(--err); }
   .log .line.ok { color: var(--ok); }
   .log .line.warn { color: var(--warn); }
+
+  /* ============ MODAL REPORT ============ */
+  .modal-overlay {
+    position: fixed; inset:0; background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(10px); z-index: 9000;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; overflow-y: auto;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-report {
+    background: #0a0a0a;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 28px;
+    width: 100%; max-width: 720px;
+    max-height: 88vh; overflow-y: auto;
+    animation: modalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: translateY(24px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+  .modal-report::-webkit-scrollbar { width: 6px; }
+  .modal-report::-webkit-scrollbar-thumb { background: #222; }
+  .report-head {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 22px;
+    padding-bottom: 16px; border-bottom: 1px solid #1a1a1a;
+  }
+  .report-head h2 {
+    font-size: 14px; letter-spacing: 5px;
+    font-weight: 900; color: var(--white);
+  }
+  .report-close {
+    background: transparent; border: 1px solid #222; color: #666;
+    font-family: inherit; font-size: 11px; letter-spacing: 2px;
+    padding: 6px 12px; border-radius: 4px; cursor: pointer;
+  }
+  .report-close:hover { color: var(--white); border-color: #444; }
+
+  .report-section { margin-bottom: 22px; }
+  .report-section h3 {
+    font-size: 10px; letter-spacing: 4px; color: #666;
+    margin-bottom: 12px; text-transform: uppercase;
+  }
+  .report-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .report-cell {
+    padding: 12px;
+    border: 1px solid #1a1a1a; border-radius: 4px;
+    background: #0d0d0d;
+  }
+  .report-cell .rc-label {
+    font-size: 9px; letter-spacing: 2px; color: #555; margin-bottom: 6px;
+  }
+  .report-cell .rc-val {
+    font-size: 18px; font-weight: 900; color: var(--white);
+  }
+  .report-cell .rc-val.good { color: var(--ok); }
+  .report-cell .rc-val.warn { color: var(--warn); }
+  .report-cell .rc-val.bad { color: var(--err); }
+
+  .rec-box {
+    border: 1px solid #1a1a1a; border-left: 2px solid var(--warn);
+    border-radius: 4px; padding: 14px; background: #0d0d0d;
+    font-size: 12px; line-height: 1.8; color: #b0b0b0;
+  }
+  .rec-box.good { border-left-color: var(--ok); }
+  .rec-box.bad { border-left-color: var(--err); }
+
+  .errors-list {
+    font-size: 11px; line-height: 2; color: #999;
+  }
+  .errors-list .e-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid #141414;
+  }
+  .errors-list .e-code { color: var(--err); font-weight: 700; }
+  .errors-list .e-count { color: var(--white); font-weight: 700; }
+
+  .report-actions {
+    display: flex; gap: 10px;
+    padding-top: 16px; border-top: 1px solid #1a1a1a;
+  }
+  .report-btn {
+    flex: 1; background: transparent;
+    border: 1px solid #222; color: #999;
+    font-family: inherit; font-size: 11px;
+    letter-spacing: 3px; padding: 12px;
+    border-radius: 4px; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .report-btn:hover { color: var(--white); border-color: #444; background: #0d0d0d; }
+  .report-btn.primary { background: var(--white); color: var(--black); border-color: var(--white); font-weight: 900; }
+  .report-btn.primary:hover { background: #fff; }
+
+  /* history button in header */
+  .head-right {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .head-btn {
+    background: transparent; border: 1px solid #1a1a1a;
+    color: #888; font-family: inherit; font-size: 10px;
+    letter-spacing: 2px; padding: 8px 14px;
+    border-radius: 4px; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .head-btn:hover { color: var(--white); border-color: #444; }
+
   @media (max-width: 900px) {
     .app {
       grid-template-columns: 1fr;
@@ -234,20 +403,31 @@
     }
     .side { border-right: none; border-bottom: 1px solid var(--border); }
     .metrics { grid-template-columns: repeat(2, 1fr); }
+    .report-grid { grid-template-columns: 1fr 1fr; }
     body { overflow: auto; }
   }
 </style>
 </head>
 <body>
 
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="pre-logo">LOAD<span>//</span>TESTER</div>
+  <div class="pre-bar"></div>
+  <div class="pre-log" id="preLog"></div>
+</div>
+
 <div class="bg"><div class="floor"></div></div>
 
-<div class="app">
+<div class="app" id="app">
   <header class="head">
     <div class="brand">LOAD<span>//</span>TESTER</div>
-    <div class="status" id="status">
-      <span class="dot"></span>
-      <span id="statusText">IDLE</span>
+    <div class="head-right">
+      <button class="head-btn" id="historyBtn">ИСТОРИЯ</button>
+      <div class="status" id="status">
+        <span class="dot"></span>
+        <span id="statusText">IDLE</span>
+      </div>
     </div>
   </header>
 
@@ -269,13 +449,28 @@
     </div>
 
     <div class="field" id="bodyField" style="display:none">
-      <label>Body (JSON)</label>
+      <label>Body</label>
       <textarea id="body" placeholder='{"key":"value"}'></textarea>
     </div>
 
-    <div class="field" id="headersField">
-      <label>Headers (JSON, опционально)</label>
+    <div class="field">
+      <label>User-Agent</label>
+      <input type="text" id="ua" value="Mozilla/5.0 (LoadTester)" spellcheck="false">
+    </div>
+
+    <div class="field">
+      <label>Cookie (опционально)</label>
+      <input type="text" id="cookie" placeholder="session=abc123" spellcheck="false">
+    </div>
+
+    <div class="field">
+      <label>Headers JSON (опционально)</label>
       <textarea id="headers" placeholder='{"Authorization":"Bearer ..."}'></textarea>
+    </div>
+
+    <div class="field">
+      <label>Telegram Chat ID (для уведомлений)</label>
+      <input type="text" id="tg" placeholder="узнай у @userinfobot" spellcheck="false">
     </div>
 
     <div class="field">
@@ -306,6 +501,21 @@
       </div>
     </div>
 
+    <div class="field">
+      <label>Timeout (сек)</label>
+      <div class="slider-row">
+        <input type="range" id="timeout" min="1" max="30" step="1" value="5">
+        <span class="slider-val" id="timeoutVal">5s</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="toggle-row">
+        <span>Строгий режим (только 200 OK)</span>
+        <div class="toggle" id="strictToggle"></div>
+      </div>
+    </div>
+
     <button class="run" id="runBtn" disabled>START TEST</button>
     <button class="stop" id="stopBtn">STOP</button>
   </aside>
@@ -317,7 +527,7 @@
         <div class="m-val" id="rps">0</div>
       </div>
       <div class="metric" id="m2">
-        <div class="m-label">LATENCY P95</div>
+        <div class="m-label">P95</div>
         <div class="m-val" id="latency">0<span class="m-unit">ms</span></div>
       </div>
       <div class="metric" id="m3">
@@ -341,26 +551,37 @@
   </main>
 </div>
 
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal-report" id="reportBody"></div>
+</div>
+
 <script>
-// ================================================================
-// НАСТРОЙКА БЭКЕНДА
-// ================================================================
+// ============================================================
+// API_BASE — адрес бэкенда. Меняй если переедешь.
+// ============================================================
 const API_BASE = 'https://sds-s5j9.onrender.com';
-// ================================================================
+// ============================================================
 
 const $ = id => document.getElementById(id);
 
 const targetEl = $('target');
 const methodEl = $('method');
 const bodyEl = $('body');
-const headersEl = $('headers');
 const bodyField = $('bodyField');
+const uaEl = $('ua');
+const cookieEl = $('cookie');
+const headersEl = $('headers');
+const tgEl = $('tg');
 const runBtn = $('runBtn');
 const stopBtn = $('stopBtn');
 const profilesBox = $('profiles');
 const patternsBox = $('patterns');
 const durationEl = $('duration');
 const durationVal = $('durationVal');
+const timeoutEl = $('timeout');
+const timeoutVal = $('timeoutVal');
+const strictToggle = $('strictToggle');
 const logEl = $('log');
 const statusEl = $('status');
 const statusText = $('statusText');
@@ -369,14 +590,45 @@ const hintEl = $('hint');
 let running = false;
 let pps = 200;
 let duration = 30;
+let timeout = 5;
 let pattern = 'steady';
+let strict = false;
 let testId = null;
 let pollTimer = null;
-let currentAnalysis = null;
+let lastReport = null;
 
-// ================================================================
-// УМНЫЙ АНАЛИЗ ТАРГЕТА
-// ================================================================
+// ============================================================
+// ПРЕЛОАДЕР
+// ============================================================
+const preLogLines = [
+  'initializing core...',
+  'loading k6 engine...',
+  'checking api endpoint...',
+  'mounting interface...',
+  'ready.'
+];
+let preIdx = 0;
+const preLog = $('preLog');
+const preTimer = setInterval(() => {
+  if (preIdx >= preLogLines.length) {
+    clearInterval(preTimer);
+    setTimeout(() => {
+      $('preloader').classList.add('hide');
+      $('app').classList.add('show');
+      consLog('APP READY', { api: API_BASE }, '#4ade80');
+      log(`system ready · api: <b>${API_BASE}</b>`);
+    }, 400);
+    return;
+  }
+  const d = document.createElement('div');
+  d.textContent = '> ' + preLogLines[preIdx];
+  preLog.appendChild(d);
+  preIdx++;
+}, 450);
+
+// ============================================================
+// АНАЛИЗ ТАРГЕТА
+// ============================================================
 function analyzeTarget(url) {
   const raw = url.trim();
   if (!raw) return null;
@@ -392,85 +644,77 @@ function analyzeTarget(url) {
     reason: []
   };
 
-  // IP или домен?
-  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/;
-  const ipMatch = raw.match(/^(\d{1,3}\.){3}\d{1,3}/);
-
-  if (ipMatch && !raw.includes('.')) {
-    // не бывает, но на всякий
-  }
-
-  if (ipRegex.test(raw) || /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(raw)) {
+  // IP?
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(raw)) {
     result.type = 'ip';
     result.typeName = 'IP-адрес';
-    result.reason.push('Это IP — скорее всего тестируешь сервер напрямую.');
     result.recommendedPattern = 'ramp';
     result.recommendedProfile = 'light';
     result.recommendedPps = 100;
-    result.warnings.push('Тестируй только своё железо. По чужому IP — уголовка.');
+    result.reason.push('Прямое обращение к IP — тестируем сервер.');
+    result.warnings.push('Тестируй только своё железо.');
     return result;
   }
 
-  // нормализуем URL
-  let url;
+  let u;
   try {
-    url = new URL(raw.startsWith('http') ? raw : 'https://' + raw);
+    u = new URL(raw.startsWith('http') ? raw : 'https://' + raw);
   } catch {
-    result.warnings.push('Не могу распарсить URL — проверь формат.');
+    result.warnings.push('Не могу распарсить URL. Формат: https://example.com');
     return result;
   }
 
-  const host = url.hostname;
-  const path = url.pathname;
-  const port = url.port;
+  const host = u.hostname;
+  const path = u.pathname;
+  const port = u.port;
 
   // API?
-  if (/\/api\//.test(path) || /api\./.test(host) || port === '8080' || port === '3000' || port === '5000') {
+  if (/\/api\//i.test(path) || /^api\./i.test(host) || port === '8080' || port === '3000' || port === '5000') {
     result.type = 'api';
-    result.typeName = 'API-эндпоинт';
-    result.recommendedMethod = 'GET';
+    result.typeName = 'API';
     result.recommendedPattern = 'ramp';
     result.recommendedProfile = 'medium';
     result.recommendedPps = 200;
-    result.reason.push('Похоже на API — рекомендую RAMP чтобы найти предел.');
-    result.reason.push('Если нужен POST — переключи Method и впиши Body.');
+    result.reason.push('Похоже на API — RAMP найдёт предел.');
+    result.reason.push('Для POST/PUT переключи Method и впиши Body.');
     return result;
   }
 
-  // известные сервисы — предупреждаем
-  const bigGuys = ['google.com','youtube.com','facebook.com','amazon.com','microsoft.com','apple.com','cloudflare.com','example.com'];
-  if (bigGuys.some(g => host === g || host.endsWith('.' + g))) {
+  // известные крупные
+  const big = ['google.com','youtube.com','facebook.com','amazon.com','microsoft.com','apple.com','cloudflare.com','twitter.com','instagram.com','tiktok.com','github.com'];
+  if (big.some(g => host === g || host.endsWith('.' + g))) {
     result.type = 'big';
     result.typeName = 'Крупный сервис';
     result.warnings.push('Это чужой крупный сервис. Тестирование без разрешения — уголовка.');
-    result.warnings.push('Для демо используй https://example.com — там нагрузка разрешена.');
-    result.recommendedPattern = 'steady';
+    result.warnings.push('Для демо используй example.com');
     result.recommendedProfile = 'light';
     result.recommendedPps = 50;
     return result;
   }
 
-  // локальный хост?
-  if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+  // локальный
+  if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
     result.type = 'local';
     result.typeName = 'Локальная сеть';
-    result.warnings.push('Render не сможет достучаться до твоего localhost — тест не пройдёт.');
+    result.warnings.push('Render не достучится до твоего localhost. Тест не пройдёт.');
     return result;
   }
 
-  // обычный сайт
+  // example.com — разрешено
+  if (host === 'example.com' || host.endsWith('.example.com')) {
+    result.typeName = 'Тестовый домен';
+    result.reason.push('example.com — официальный тестовый домен. Идеален для демо.');
+    result.reason.push('MEDIUM + STEADY, 30 сек — базовый сценарий.');
+    return result;
+  }
+
   result.reason.push('Обычный сайт. Начни с MEDIUM + STEADY.');
-  result.reason.push('Если сервер держит — переключай на HEAVY.');
+  result.reason.push('Если держит — переключай на HEAVY.');
   return result;
 }
 
 function applyAnalysis(a) {
-  if (!a) {
-    hintEl.classList.remove('show');
-    return;
-  }
-
-  currentAnalysis = a;
+  if (!a) { hintEl.classList.remove('show'); return; }
   hintEl.className = 'hint show' + (a.warnings.length ? ' danger' : ' recommend');
   hintEl.innerHTML = `
     <div><span class="tag">${a.typeName.toUpperCase()}</span></div>
@@ -478,32 +722,24 @@ function applyAnalysis(a) {
     ${a.warnings.map(w => `<div style="color:var(--err)">⚠ ${w}</div>`).join('')}
     <div style="margin-top:8px;color:#666">Рекомендую: <b>${a.recommendedProfile.toUpperCase()}</b> · <b>${a.recommendedPattern.toUpperCase()}</b> · <b>${a.recommendedPps} RPS</b></div>
   `;
-
-  // авто-подсветка рекомендованных кнопок
   document.querySelectorAll('#profiles .profile-btn').forEach(b => {
     b.classList.toggle('rec', parseInt(b.dataset.pps) === a.recommendedPps);
   });
   document.querySelectorAll('#patterns .profile-btn').forEach(b => {
     b.classList.toggle('rec', b.dataset.pattern === a.recommendedPattern);
   });
-
-  // авто-выбор метода
-  if (a.recommendedMethod) {
-    methodEl.value = a.recommendedMethod;
-    methodEl.dispatchEvent(new Event('change'));
-  }
 }
 
-// ================================================================
-// КОНСОЛЬ — видно что реально летит
-// ================================================================
+// ============================================================
+// КОНСОЛЬ
+// ============================================================
 function consLog(label, data, color = '#ededed') {
   console.log('%c[LT] ' + label, `color:${color};font-weight:bold`, data);
 }
 
-// ================================================================
+// ============================================================
 // UI
-// ================================================================
+// ============================================================
 targetEl.addEventListener('input', () => {
   const a = analyzeTarget(targetEl.value);
   applyAnalysis(a);
@@ -536,6 +772,16 @@ durationEl.addEventListener('input', () => {
   durationVal.textContent = duration + 's';
 });
 
+timeoutEl.addEventListener('input', () => {
+  timeout = parseInt(timeoutEl.value, 10);
+  timeoutVal.textContent = timeout + 's';
+});
+
+strictToggle.addEventListener('click', () => {
+  strict = !strict;
+  strictToggle.classList.toggle('on', strict);
+});
+
 function updateRunBtn() {
   runBtn.disabled = !(targetEl.value.trim() && !running);
 }
@@ -551,9 +797,9 @@ function log(text, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// ================================================================
+// ============================================================
 // ГРАФИК
-// ================================================================
+// ============================================================
 const canvas = $('chart');
 const ctx = canvas.getContext('2d');
 let chartData = [];
@@ -616,18 +862,18 @@ function setStatus(text, cls = '') {
   statusEl.className = 'status ' + cls;
 }
 
-// ================================================================
-// РЕАЛЬНАЯ ОТПРАВКА НА БЭКЕНД
-// ================================================================
+// ============================================================
+// START TEST
+// ============================================================
 async function startTest() {
   if (running) return;
 
-  // собрать payload
   let headers = {};
   if (headersEl.value.trim()) {
     try { headers = JSON.parse(headersEl.value); }
-    catch { log('headers: невалидный JSON — игнорирую', 'warn'); consLog('HEADERS PARSE ERROR', headersEl.value, '#ffaa00'); }
+    catch { log('headers JSON невалиден — игнорирую', 'warn'); headers = {}; }
   }
+
   let body = '';
   if (bodyEl.value.trim() && (methodEl.value === 'POST' || methodEl.value === 'PUT')) {
     body = bodyEl.value.trim();
@@ -641,14 +887,17 @@ async function startTest() {
     headers: headers,
     body: body,
     pattern: pattern,
+    timeout: timeout,
+    user_agent: uaEl.value.trim() || null,
+    cookie: cookieEl.value.trim() || null,
+    strict: strict,
+    tg_chat_id: tgEl.value.trim() || null
   };
 
-  // лог в консоль — видно что летит
-  consLog('POST /api/start', { url: API_BASE + '/api/start', payload }, '#4ade80');
+  consLog('POST /api/start', payload, '#4ade80');
   log(`POST <b>${API_BASE}/api/start</b>`, 'ok');
-  log(`payload: target=${payload.target} · pps=${payload.pps} · duration=${payload.duration}s · pattern=${payload.pattern} · method=${payload.method}`);
+  log(`target=${payload.target} · ${payload.pps}rps · ${payload.duration}s · ${payload.pattern}`);
 
-  // UI в running
   running = true;
   chartData = [];
   rpsEl.textContent = '0';
@@ -667,25 +916,21 @@ async function startTest() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-
-    consLog('response', { status: res.status, ok: res.ok }, res.ok ? '#4ade80' : '#f87171');
-
+    consLog('response status', res.status, res.ok ? '#4ade80' : '#f87171');
     if (!res.ok) {
       const txt = await res.text();
       consLog('error body', txt, '#f87171');
-      throw new Error('HTTP ' + res.status + ': ' + txt.slice(0, 200));
+      throw new Error('HTTP ' + res.status);
     }
-
     const data = await res.json();
-    consLog('test id', data, '#4ade80');
+    consLog('test accepted', data, '#4ade80');
     testId = data.id;
     log(`test accepted · id = <b>${testId}</b>`, 'ok');
     setStatus('RUNNING', 'online');
     pollTimer = setInterval(pollStatus, 500);
-
   } catch (e) {
     consLog('START FAILED', e.message, '#f87171');
-    log('ошибка запуска: ' + e.message, 'err');
+    log('ошибка: ' + e.message, 'err');
     setStatus('ERROR', 'err');
     resetUI();
   }
@@ -695,17 +940,13 @@ async function pollStatus() {
   if (!testId) return;
   try {
     const res = await fetch(API_BASE + '/api/status/' + testId);
-    if (!res.ok) {
-      consLog('poll http error', res.status, '#ffaa00');
-      return;
-    }
+    if (!res.ok) return;
     const data = await res.json();
-    consLog('poll', data);
+    consLog('poll', { status: data.status, elapsed: data.elapsed });
 
     elapsedEl.innerHTML = Math.floor(data.elapsed) + '<span class="m-unit">s</span>';
 
     if (data.status === 'running') {
-      // пока k6 не отдал summary, рисуем ориентировочный RPS чтобы график был живой
       const approx = Math.round(pps * (0.85 + Math.random() * 0.3));
       rpsEl.textContent = approx;
       chartData.push(approx);
@@ -713,38 +954,26 @@ async function pollStatus() {
       drawChart();
     }
 
-    if (data.status === 'finished' || data.status === 'timeout' || data.status === 'stopped') {
+    if (['finished','timeout','stopped','error'].includes(data.status)) {
       clearInterval(pollTimer);
       pollTimer = null;
-
-      const s = data.summary || {};
-      const metrics = s.metrics || {};
-      const reqs = metrics.http_reqs?.values || {};
-      const dur = metrics.http_req_duration?.values || {};
-      const failed = metrics.http_req_failed?.values || {};
-
-      const realRps = Math.round(reqs.rate || 0);
-      const realP95 = Math.round(dur['p(95)'] || 0);
-      const realErr = ((failed.rate || 0) * 100).toFixed(2);
-
-      rpsEl.textContent = realRps;
-      latencyEl.innerHTML = realP95 + '<span class="m-unit">ms</span>';
-      errorsEl.innerHTML = realErr + '<span class="m-unit">%</span>';
-
-      consLog('FINAL SUMMARY', { rps: realRps, p95: realP95, errors: realErr, raw: s }, '#4ade80');
-
-      log('──────── test completed ────────', 'ok');
-      log(`total requests: <b>${reqs.count || 0}</b>`);
-      log(`avg latency: <b>${Math.round(dur.avg || 0)}ms</b> · p95: <b>${realP95}ms</b> · p99: <b>${Math.round(dur['p(99)'] || 0)}ms</b>`);
-      log(`errors: <b>${failed.count || 0}</b> (${realErr}%)`);
-
-      setStatus('COMPLETE', '');
-      resetUI();
+      consLog('FINAL', data.summary, '#4ade80');
+      finishTest(data);
     }
   } catch (e) {
     consLog('poll error', e.message, '#f87171');
-    log('poll error: ' + e.message, 'err');
   }
+}
+
+async function stopTest() {
+  if (!testId) { resetUI(); return; }
+  consLog('POST /api/stop/' + testId, {}, '#ffaa00');
+  log('останавливаю...', 'warn');
+  try { await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' }); }
+  catch (e) { consLog('stop failed', e.message, '#f87171'); }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  setStatus('STOPPED', '');
+  resetUI();
 }
 
 function resetUI() {
@@ -757,32 +986,376 @@ function resetUI() {
   testId = null;
 }
 
-async function stopTest() {
-  if (!testId) { resetUI(); return; }
-  consLog('POST /api/stop/' + testId, {}, '#ffaa00');
-  log('отправляю STOP на бэкенд...', 'warn');
-  try {
-    await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' });
-  } catch (e) {
-    consLog('stop failed', e.message, '#f87171');
-  }
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  setStatus('STOPPED', '');
+// ============================================================
+// ФИНАЛИЗАЦИЯ + ОТЧЁТ
+// ============================================================
+function finishTest(data) {
+  const s = data.summary || {};
+  const m = s.metrics || {};
+  const reqs = m.http_reqs?.values || {};
+  const dur = m.http_req_duration?.values || {};
+  const failed = m.http_req_failed?.values || {};
+  const checks = m.checks?.values || {};
+
+  const realRps = Math.round(reqs.rate || 0);
+  const p50 = Math.round(dur['p(50)'] || 0);
+  const p95 = Math.round(dur['p(95)'] || 0);
+  const p99 = Math.round(dur['p(99)'] || 0);
+  const avg = Math.round(dur.avg || 0);
+  const min = Math.round(dur.min || 0);
+  const max = Math.round(dur.max || 0);
+  const errRate = ((failed.rate || 0) * 100).toFixed(2);
+  const errCount = failed.count || 0;
+  const okCount = (reqs.count || 0) - errCount;
+
+  rpsEl.textContent = realRps;
+  latencyEl.innerHTML = p95 + '<span class="m-unit">ms</span>';
+  errorsEl.innerHTML = errRate + '<span class="m-unit">%</span>';
+
+  log('──────── test completed ────────', 'ok');
+  log(`RPS: <b>${realRps}</b> · всего: <b>${reqs.count || 0}</b>`);
+  log(`P50: <b>${p50}ms</b> · P95: <b>${p95}ms</b> · P99: <b>${p99}ms</b>`);
+  log(`avg: ${avg}ms · min: ${min}ms · max: ${max}ms`);
+  log(`успешных: <b>${okCount}</b> · ошибок: <b>${errCount}</b> (${errRate}%)`);
+
+  const report = {
+    id: testId,
+    date: new Date().toISOString(),
+    target: data.target || targetEl.value.trim(),
+    method: methodEl.value,
+    pps: pps,
+    duration: duration,
+    pattern: pattern,
+    timeout: timeout,
+    strict: strict,
+    rps: realRps,
+    total: reqs.count || 0,
+    p50, p95, p99, avg, min, max,
+    errors: errCount,
+    errorRate: parseFloat(errRate),
+    okCount
+  };
+
+  lastReport = report;
+  saveHistory(report);
+  showReport(report);
+
+  setStatus('COMPLETE', '');
   resetUI();
 }
 
+// ============================================================
+// РЕКОМЕНДАЦИИ
+// ============================================================
+function makeRecommendations(r) {
+  const recs = [];
+  let mood = 'good';
+
+  if (r.errorRate > 5) {
+    recs.push(`Сервер сыпет ошибками (${r.errorRate}%). Приложение не справляется с нагрузкой ${r.rps} RPS.`);
+    mood = 'bad';
+  } else if (r.errorRate > 1) {
+    recs.push(`Ошибки ${r.errorRate}% — сервер близок к пределу.`);
+    mood = 'warn';
+  } else {
+    recs.push(`Ошибок почти нет (${r.errorRate}%). Сервер держит ${r.rps} RPS уверенно.`);
+  }
+
+  if (r.p95 > 2000) {
+    recs.push(`P95 = ${r.p95}ms — критично. Пользователи ждут больше 2 секунд. Узкое место скорее всего БД или медленные запросы.`);
+    mood = 'bad';
+  } else if (r.p95 > 500) {
+    recs.push(`P95 = ${r.p95}ms — приемлемо для внутреннего API, но для публичного сайта медленно.`);
+    if (mood !== 'bad') mood = 'warn';
+  } else {
+    recs.push(`P95 = ${r.p95}ms — хороший отклик.`);
+  }
+
+  if (r.max > r.p99 * 3 && r.max > 1000) {
+    recs.push(`Максимум ${r.max}ms — есть отдельные "хвосты". Возможно проблема с холодным стартом или GC.`);
+  }
+
+  const totalReqs = r.total;
+  if (totalReqs > 0) {
+    recs.push(`Всего прогнали ${totalReqs} запросов за ${r.duration}s. Успешных ${r.okCount}, ошибок ${r.errors}.`);
+  }
+
+  if (mood === 'good') {
+    recs.push('Вывод: сервер стабилен. Можно поднять нагрузку до следующего профиля для проверки запаса.');
+  } else if (mood === 'warn') {
+    recs.push('Вывод: сервер на грани. Рекомендую оптимизировать перед продакшеном.');
+  } else {
+    recs.push('Вывод: сервер не справляется с этой нагрузкой. Нужна оптимизация: кэш, индексы БД, CDN, горизонтальное масштабирование.');
+  }
+
+  return { mood, recs };
+}
+
+// ============================================================
+// МОДАЛКА ОТЧЁТА
+// ============================================================
+function showReport(r) {
+  const rec = makeRecommendations(r);
+  const cls = rec.mood === 'good' ? 'good' : (rec.mood === 'bad' ? 'bad' : '');
+
+  const html = `
+    <div class="report-head">
+      <h2>ОТЧЁТ ТЕСТА</h2>
+      <button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button>
+    </div>
+
+    <div class="report-section">
+      <h3>Цель</h3>
+      <div class="report-cell">
+        <div class="rc-val" style="font-size:14px;word-break:break-all">${r.target}</div>
+        <div class="rc-label" style="margin-top:8px">${r.method} · ${r.pattern.toUpperCase()} · ${r.pps} RPS · ${r.duration}s · timeout ${r.timeout}s${r.strict ? ' · СТРОГИЙ' : ''}</div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Метрики</h3>
+      <div class="report-grid">
+        <div class="report-cell"><div class="rc-label">RPS</div><div class="rc-val">${r.rps}</div></div>
+        <div class="report-cell"><div class="rc-label">ВСЕГО ЗАПРОСОВ</div><div class="rc-val">${r.total}</div></div>
+        <div class="report-cell"><div class="rc-label">ERROR RATE</div><div class="rc-val ${r.errorRate > 5 ? 'bad' : r.errorRate > 1 ? 'warn' : 'good'}">${r.errorRate}%</div></div>
+        <div class="report-cell"><div class="rc-label">AVG</div><div class="rc-val">${r.avg}<span class="m-unit">ms</span></div></div>
+        <div class="report-cell"><div class="rc-label">P50</div><div class="rc-val">${r.p50}<span class="m-unit">ms</span></div></div>
+        <div class="report-cell"><div class="rc-label">P95</div><div class="rc-val ${r.p95 > 2000 ? 'bad' : r.p95 > 500 ? 'warn' : 'good'}">${r.p95}<span class="m-unit">ms</span></div></div>
+        <div class="report-cell"><div class="rc-label">P99</div><div class="rc-val ${r.p99 > 3000 ? 'bad' : r.p99 > 1000 ? 'warn' : 'good'}">${r.p99}<span class="m-unit">ms</span></div></div>
+        <div class="report-cell"><div class="rc-label">MIN</div><div class="rc-val">${r.min}<span class="m-unit">ms</span></div></div>
+        <div class="report-cell"><div class="rc-label">MAX</div><div class="rc-val">${r.max}<span class="m-unit">ms</span></div></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Счётчики</h3>
+      <div class="errors-list">
+        <div class="e-row"><span>Успешных</span><span class="e-count" style="color:var(--ok)">${r.okCount}</span></div>
+        <div class="e-row"><span>Ошибок</span><span class="e-count" style="color:var(--err)">${r.errors}</span></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Рекомендации</h3>
+      <div class="rec-box ${cls}">
+        ${rec.recs.map(x => `· ${x}`).join('<br>')}
+      </div>
+    </div>
+
+    <div class="report-actions">
+      <button class="report-btn primary" onclick="exportTXT()">СКАЧАТЬ TXT</button>
+      <button class="report-btn" onclick="exportPDF()">СКАЧАТЬ PDF</button>
+      <button class="report-btn" onclick="closeReport()">ЗАКРЫТЬ</button>
+    </div>
+  `;
+
+  $('reportBody').innerHTML = html;
+  $('reportModal').classList.add('active');
+}
+
+function closeReport() {
+  $('reportModal').classList.remove('active');
+}
+
+// ============================================================
+// ЭКСПОРТ
+// ============================================================
+function buildTextReport() {
+  const r = lastReport;
+  if (!r) return '';
+  const rec = makeRecommendations(r);
+  return `
+═══════════════════════════════════════════════
+              LOAD TESTER — ОТЧЁТ
+═══════════════════════════════════════════════
+
+Дата:        ${new Date(r.date).toLocaleString('ru-RU')}
+ID теста:    ${r.id}
+Цель:        ${r.target}
+Метод:       ${r.method}
+Паттерн:     ${r.pattern}
+Нагрузка:    ${r.pps} RPS
+Длительность: ${r.duration}s
+Timeout:     ${r.timeout}s
+Строгий:     ${r.strict ? 'да' : 'нет'}
+
+─────────────── МЕТРИКИ ───────────────
+RPS:            ${r.rps}
+Всего запросов: ${r.total}
+Успешных:       ${r.okCount}
+Ошибок:         ${r.errors}
+Error rate:     ${r.errorRate}%
+
+Latency avg:    ${r.avg} ms
+Latency min:    ${r.min} ms
+Latency P50:    ${r.p50} ms
+Latency P95:    ${r.p95} ms
+Latency P99:    ${r.p99} ms
+Latency max:    ${r.max} ms
+
+─────────────── РЕКОМЕНДАЦИИ ───────────────
+${rec.recs.map(x => '· ' + x).join('\n')}
+
+═══════════════════════════════════════════════
+Сгенерировано LOAD TESTER · ${API_BASE}
+═══════════════════════════════════════════════
+`;
+}
+
+function exportTXT() {
+  const text = buildTextReport();
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `loadtest_${lastReport.id}_${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  consLog('TXT exported', a.download, '#4ade80');
+}
+
+function exportPDF() {
+  const r = lastReport;
+  if (!r) return;
+  const rec = makeRecommendations(r);
+
+  const html = `
+    <html><head><meta charset="utf-8"><title>Load Test Report ${r.id}</title>
+    <style>
+      body { font-family: 'Courier New', monospace; padding: 40px; color: #111; }
+      h1 { font-size: 22px; letter-spacing: 4px; border-bottom: 2px solid #111; padding-bottom: 10px; }
+      h2 { font-size: 14px; letter-spacing: 3px; margin-top: 24px; color: #444; }
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+      td { padding: 8px 0; border-bottom: 1px solid #ddd; font-size: 13px; }
+      td:last-child { text-align: right; font-weight: bold; }
+      .rec { margin-top: 10px; padding: 14px; border-left: 3px solid #666; background: #f5f5f5; line-height: 1.8; }
+      .footer { margin-top: 40px; font-size: 11px; color: #888; text-align: center; }
+    </style></head><body>
+      <h1>LOAD TEST — ОТЧЁТ</h1>
+      <h2>ЦЕЛЬ</h2>
+      <table>
+        <tr><td>URL</td><td>${r.target}</td></tr>
+        <tr><td>Метод</td><td>${r.method}</td></tr>
+        <tr><td>Паттерн</td><td>${r.pattern}</td></tr>
+        <tr><td>Нагрузка</td><td>${r.pps} RPS</td></tr>
+        <tr><td>Длительность</td><td>${r.duration}s</td></tr>
+        <tr><td>Дата</td><td>${new Date(r.date).toLocaleString('ru-RU')}</td></tr>
+      </table>
+      <h2>МЕТРИКИ</h2>
+      <table>
+        <tr><td>RPS</td><td>${r.rps}</td></tr>
+        <tr><td>Всего запросов</td><td>${r.total}</td></tr>
+        <tr><td>Успешных</td><td>${r.okCount}</td></tr>
+        <tr><td>Ошибок</td><td>${r.errors} (${r.errorRate}%)</td></tr>
+        <tr><td>Latency avg</td><td>${r.avg} ms</td></tr>
+        <tr><td>Latency P50</td><td>${r.p50} ms</td></tr>
+        <tr><td>Latency P95</td><td>${r.p95} ms</td></tr>
+        <tr><td>Latency P99</td><td>${r.p99} ms</td></tr>
+        <tr><td>Latency min</td><td>${r.min} ms</td></tr>
+        <tr><td>Latency max</td><td>${r.max} ms</td></tr>
+      </table>
+      <h2>РЕКОМЕНДАЦИИ</h2>
+      <div class="rec">${rec.recs.map(x => '· ' + x).join('<br>')}</div>
+      <div class="footer">Сгенерировано LOAD TESTER · ${API_BASE}</div>
+    </body></html>
+  `;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { w.print(); }, 300);
+  consLog('PDF: открыл окно печати', {}, '#4ade80');
+}
+
+// ============================================================
+// ИСТОРИЯ
+// ============================================================
+const HISTORY_KEY = 'lt_history_v1';
+
+function saveHistory(r) {
+  let h = [];
+  try { h = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch {}
+  h.unshift(r);
+  h = h.slice(0, 50);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+}
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+
+function showHistory() {
+  const h = loadHistory();
+  let html = `
+    <div class="report-head">
+      <h2>ИСТОРИЯ ТЕСТОВ</h2>
+      <button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button>
+    </div>
+  `;
+
+  if (!h.length) {
+    html += `<div class="rec-box">Пока пусто. Запусти первый тест — он появится здесь.</div>`;
+  } else {
+    html += `<div class="errors-list">`;
+    h.forEach((r, i) => {
+      const prev = h[i + 1];
+      let delta = '';
+      if (prev) {
+        const dRps = r.rps - prev.rps;
+        const dP95 = r.p95 - prev.p95;
+        if (dRps !== 0 || dP95 !== 0) {
+          delta = `<span style="color:#666;font-size:10px">Δ RPS ${dRps >= 0 ? '+' : ''}${dRps} · Δ P95 ${dP95 >= 0 ? '+' : ''}${dP95}ms</span>`;
+        }
+      }
+      html += `
+        <div class="e-row" style="flex-direction:column;align-items:flex-start;padding:12px 0">
+          <div style="width:100%;display:flex;justify-content:space-between">
+            <span style="color:var(--white);font-weight:700">${r.target}</span>
+            <span style="color:#666;font-size:10px">${new Date(r.date).toLocaleString('ru-RU')}</span>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:6px;font-size:11px;color:#999">
+            <span>RPS: <b style="color:var(--white)">${r.rps}</b></span>
+            <span>P95: <b style="color:var(--white)">${r.p95}ms</b></span>
+            <span>ERR: <b style="color:var(--err)">${r.errorRate}%</b></span>
+            <span>${r.pattern.toUpperCase()}</span>
+          </div>
+          ${delta}
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  html += `
+    <div class="report-actions">
+      <button class="report-btn" onclick="clearHistory()">ОЧИСТИТЬ ИСТОРИЮ</button>
+      <button class="report-btn" onclick="closeReport()">ЗАКРЫТЬ</button>
+    </div>
+  `;
+
+  $('reportBody').innerHTML = html;
+  $('reportModal').classList.add('active');
+}
+
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  closeReport();
+  log('история очищена', 'warn');
+}
+
+// ============================================================
+// КНОПКИ
+// ============================================================
 runBtn.addEventListener('click', startTest);
 stopBtn.addEventListener('click', stopTest);
+$('historyBtn').addEventListener('click', showHistory);
 
-// ================================================================
+// ============================================================
 // INIT
-// ================================================================
+// ============================================================
 resizeCanvas();
 drawChart();
 updateRunBtn();
-consLog('API_BASE', API_BASE, '#4ade80');
-log(`system ready · api: <b>${API_BASE}</b>`);
-log('вставь ссылку в Target — получишь рекомендацию');
 </script>
 </body>
 </html>
