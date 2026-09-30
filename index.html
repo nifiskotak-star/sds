@@ -15,6 +15,7 @@
     --warn: #ffaa00;
     --ok: #4ade80;
     --err: #f87171;
+    --blue: #60a5fa;
   }
   html, body {
     height:100%;
@@ -25,80 +26,43 @@
     -webkit-font-smoothing: antialiased;
   }
   #preloader {
-    position: fixed; inset:0;
-    background: var(--black);
-    z-index: 10000;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 30px;
+    position: fixed; inset:0; background: var(--black);
+    z-index: 10000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 30px;
     transition: opacity 0.8s ease, visibility 0.8s;
   }
   #preloader.hide { opacity:0; visibility:hidden; }
-  .pre-logo {
-    font-size: 32px; font-weight: 900;
-    letter-spacing: 10px; color: var(--white);
-    animation: prePulse 2s ease-in-out infinite;
-  }
+  .pre-logo { font-size: 32px; font-weight: 900; letter-spacing: 10px; animation: prePulse 2s ease-in-out infinite; }
   .pre-logo span { color: #444; }
   @keyframes prePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  .pre-bar {
-    width: min(400px, 70vw); height: 2px;
-    background: #111; position: relative; overflow: hidden;
-  }
-  .pre-bar::after {
-    content:''; position: absolute; top:0; left:0; height:100%;
-    background: var(--white);
-    animation: preLoad 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-  @keyframes preLoad {
-    0% { width: 0%; }
-    20% { width: 18%; }
-    45% { width: 42%; }
-    70% { width: 68%; }
-    100% { width: 100%; }
-  }
-  .pre-log {
-    font-size: 11px; color: #666;
-    letter-spacing: 1px; text-align: left;
-    width: min(400px, 70vw); height: 100px;
-    overflow: hidden; line-height: 1.9;
-  }
+  .pre-bar { width: min(400px, 70vw); height: 2px; background: #111; position: relative; overflow: hidden; }
+  .pre-bar::after { content:''; position: absolute; top:0; left:0; height:100%; background: var(--white); animation: preLoad 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes preLoad { 0%{width:0%} 20%{width:18%} 45%{width:42%} 70%{width:68%} 100%{width:100%} }
+  .pre-log { font-size: 11px; color: #666; width: min(400px, 70vw); height: 100px; overflow: hidden; line-height: 1.9; }
   .pre-log div { animation: lineIn 0.3s ease both; }
   @keyframes lineIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
-
   .bg { position: fixed; inset:0; perspective: 400px; overflow: hidden; z-index: 0; }
   .bg .floor {
     position: absolute; bottom: -30%; left: -50%; width: 200%; height: 70%;
-    background-image:
-      linear-gradient(rgba(220,220,220,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(220,220,220,0.05) 1px, transparent 1px);
-    background-size: 60px 60px;
-    transform: rotateX(74deg);
-    animation: floorMove 8s linear infinite;
+    background-image: linear-gradient(rgba(220,220,220,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(220,220,220,0.05) 1px, transparent 1px);
+    background-size: 60px 60px; transform: rotateX(74deg); animation: floorMove 8s linear infinite;
     mask-image: linear-gradient(to top, black 20%, transparent 90%);
     -webkit-mask-image: linear-gradient(to top, black 20%, transparent 90%);
   }
-  @keyframes floorMove {
-    from { background-position: 0 0; }
-    to   { background-position: 0 60px; }
-  }
+  @keyframes floorMove { from{background-position:0 0} to{background-position:0 60px} }
   body::after {
     content:''; position: fixed; inset:0;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.9) 100%);
     pointer-events:none; z-index: 9999;
   }
-
   .app {
     position: relative; z-index: 2; height: 100vh;
-    display: grid;
-    grid-template-columns: 400px 1fr;
+    display: grid; grid-template-columns: 400px 1fr;
     grid-template-rows: 60px 1fr;
     grid-template-areas: "head head" "side main";
-    opacity: 0;
-    transition: opacity 0.6s ease;
+    opacity: 0; transition: opacity 0.6s ease;
   }
   .app.show { opacity: 1; }
-
   .head {
     grid-area: head; display: flex; align-items: center; justify-content: space-between;
     padding: 0 28px; border-bottom: 1px solid var(--border);
@@ -106,21 +70,11 @@
   }
   .brand { font-size: 12px; letter-spacing: 6px; font-weight: 900; }
   .brand span { color: #555; }
-  .status {
-    font-size: 10px; letter-spacing: 3px; color: #666;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .status .dot {
-    width: 6px; height: 6px; border-radius: 50%; background: #444;
-    transition: background 0.3s;
-  }
-  .status.online .dot {
-    background: var(--white); box-shadow: 0 0 10px rgba(255,255,255,0.7);
-    animation: pulse 2s infinite;
-  }
+  .status { font-size: 10px; letter-spacing: 3px; color: #666; display: flex; align-items: center; gap: 10px; }
+  .status .dot { width: 6px; height: 6px; border-radius: 50%; background: #444; transition: background 0.3s; }
+  .status.online .dot { background: var(--white); box-shadow: 0 0 10px rgba(255,255,255,0.7); animation: pulse 2s infinite; }
   .status.err .dot { background: var(--err); box-shadow: 0 0 10px var(--err); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
   .side {
     grid-area: side; padding: 24px 22px;
     border-right: 1px solid var(--border);
@@ -128,44 +82,28 @@
   }
   .side::-webkit-scrollbar { width: 4px; }
   .side::-webkit-scrollbar-thumb { background: #222; }
-
   .field { margin-bottom: 18px; }
-  .field label {
-    display: block; font-size: 9px; letter-spacing: 3px;
-    color: #666; margin-bottom: 8px; text-transform: uppercase;
-  }
+  .field label { display: block; font-size: 9px; letter-spacing: 3px; color: #666; margin-bottom: 8px; text-transform: uppercase; }
   .field input, .field select, .field textarea {
     width: 100%; background: #080808; border: 1px solid var(--border);
     color: var(--white); font-family: inherit; font-size: 13px;
-    padding: 11px 13px; border-radius: 4px; outline: none;
-    transition: border-color 0.3s;
+    padding: 11px 13px; border-radius: 4px; outline: none; transition: border-color 0.3s;
   }
   .field textarea { resize: vertical; min-height: 52px; font-size: 12px; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: #444; }
   .field input::placeholder, .field textarea::placeholder { color: #333; }
-
   .hint {
-    margin-top: 10px; padding: 12px 14px;
-    border: 1px solid #1e1e1e;
-    border-left: 2px solid var(--warn);
-    border-radius: 4px;
-    background: #0a0a0a;
-    font-size: 11px; line-height: 1.7; color: #999;
-    display: none;
+    margin-top: 10px; padding: 12px 14px; border: 1px solid #1e1e1e;
+    border-left: 2px solid var(--warn); border-radius: 4px;
+    background: #0a0a0a; font-size: 11px; line-height: 1.7; color: #999; display: none;
   }
   .hint.show { display: block; }
   .hint.recommend { border-left-color: var(--ok); }
   .hint.danger { border-left-color: var(--err); }
-  .hint .tag {
-    display: inline-block; padding: 2px 8px;
-    background: #1a1a1a; border-radius: 3px;
-    font-size: 9px; letter-spacing: 2px;
-    color: var(--warn); margin-right: 8px;
-  }
+  .hint .tag { display: inline-block; padding: 2px 8px; background: #1a1a1a; border-radius: 3px; font-size: 9px; letter-spacing: 2px; color: var(--warn); margin-right: 8px; }
   .hint.recommend .tag { color: var(--ok); }
   .hint.danger .tag { color: var(--err); }
   .hint b { color: var(--white); }
-
   .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .profile-btn {
     background: #080808; border: 1px solid var(--border); color: #888;
@@ -174,105 +112,46 @@
     transition: all 0.25s; text-align: center; position: relative;
   }
   .profile-btn:hover { border-color: #333; color: var(--white); }
-  .profile-btn.active {
-    background: var(--white); color: var(--black);
-    border-color: var(--white); font-weight: 900;
-  }
-  .profile-btn.rec::after {
-    content:'★'; position: absolute;
-    top: 4px; right: 6px; font-size: 8px; color: var(--ok);
-  }
+  .profile-btn.active { background: var(--white); color: var(--black); border-color: var(--white); font-weight: 900; }
+  .profile-btn.rec::after { content:'★'; position: absolute; top: 4px; right: 6px; font-size: 8px; color: var(--ok); }
   .profile-btn.active.rec::after { color: var(--black); }
-
   .slider-row { display: flex; align-items: center; gap: 12px; }
-  .slider-row input[type=range] {
-    flex: 1; -webkit-appearance: none; appearance: none;
-    height: 2px; background: #222; outline: none; padding: 0; border: none;
-  }
-  .slider-row input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 14px; height: 14px; background: var(--white);
-    border-radius: 50%; cursor: pointer;
-  }
-  .slider-val {
-    font-size: 12px; color: var(--white); min-width: 48px;
-    text-align: right; font-weight: 700;
-  }
-
-  .toggle-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 0; font-size: 11px; color: #999;
-  }
-  .toggle {
-    width: 34px; height: 18px; background: #111;
-    border: 1px solid var(--border); border-radius: 10px;
-    position: relative; cursor: pointer; transition: all 0.3s;
-  }
-  .toggle::after {
-    content:''; position: absolute; top: 2px; left: 2px;
-    width: 12px; height: 12px; background: #555;
-    border-radius: 50%; transition: all 0.3s;
-  }
+  .slider-row input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 2px; background: #222; outline: none; padding: 0; border: none; }
+  .slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: var(--white); border-radius: 50%; cursor: pointer; }
+  .slider-val { font-size: 12px; color: var(--white); min-width: 48px; text-align: right; font-weight: 700; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 11px; color: #999; }
+  .toggle { width: 34px; height: 18px; background: #111; border: 1px solid var(--border); border-radius: 10px; position: relative; cursor: pointer; transition: all 0.3s; }
+  .toggle::after { content:''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: #555; border-radius: 50%; transition: all 0.3s; }
   .toggle.on { background: #2a2a2a; border-color: #444; }
   .toggle.on::after { left: 18px; background: var(--white); }
-
   .run {
     width: 100%; background: var(--white); color: var(--black);
     border: none; font-family: inherit; font-weight: 900;
     font-size: 12px; letter-spacing: 5px; padding: 15px;
-    border-radius: 4px; cursor: pointer; transition: all 0.3s;
-    margin-bottom: 10px;
+    border-radius: 4px; cursor: pointer; transition: all 0.3s; margin-bottom: 10px;
   }
   .run:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 30px rgba(255,255,255,0.25); }
   .run:disabled { background: #111; color: #333; cursor: not-allowed; }
-  .stop {
-    width: 100%; background: transparent; color: #666;
-    border: 1px solid var(--border); font-family: inherit;
-    font-weight: 700; font-size: 11px; letter-spacing: 4px;
-    padding: 13px; border-radius: 4px; cursor: pointer;
-    transition: all 0.25s; display: none;
-  }
+  .run.ladder { background: #0f0f0f; color: var(--white); border: 1px solid #333; }
+  .run.ladder:hover:not(:disabled) { background: #151515; border-color: #666; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+  .stop { width: 100%; background: transparent; color: #666; border: 1px solid var(--border); font-family: inherit; font-weight: 700; font-size: 11px; letter-spacing: 4px; padding: 13px; border-radius: 4px; cursor: pointer; transition: all 0.25s; display: none; }
   .stop:hover { color: var(--white); border-color: #444; }
   .stop.active { display: block; }
-
-  .main {
-    grid-area: main; padding: 24px;
-    display: flex; flex-direction: column; gap: 16px; overflow: hidden;
-  }
+  .main { grid-area: main; padding: 24px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .metric {
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 16px; background: #080808;
-    position: relative; overflow: hidden;
-    transition: border-color 0.3s;
-  }
+  .metric { border: 1px solid var(--border); border-radius: 6px; padding: 16px; background: #080808; position: relative; overflow: hidden; transition: border-color 0.3s; }
   .metric.active { border-color: #333; }
-  .metric .m-label {
-    font-size: 9px; letter-spacing: 3px; color: #555; margin-bottom: 8px;
-  }
-  .metric .m-val {
-    font-size: 26px; font-weight: 900; color: var(--white);
-    line-height: 1; letter-spacing: -1px;
-  }
-  .metric .m-unit {
-    font-size: 11px; color: #555; margin-left: 4px; font-weight: 400;
-  }
-
-  .chart {
-    flex: 1; border: 1px solid var(--border); border-radius: 6px;
-    background: #080808; position: relative; overflow: hidden; min-height: 180px;
-  }
+  .metric .m-label { font-size: 9px; letter-spacing: 3px; color: #555; margin-bottom: 8px; }
+  .metric .m-val { font-size: 26px; font-weight: 900; color: var(--white); line-height: 1; letter-spacing: -1px; }
+  .metric .m-unit { font-size: 11px; color: #555; margin-left: 4px; font-weight: 400; }
+  .chart { flex: 1; border: 1px solid var(--border); border-radius: 6px; background: #080808; position: relative; overflow: hidden; min-height: 180px; }
   .chart canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .chart .c-label {
-    position: absolute; top: 12px; left: 14px;
-    font-size: 9px; letter-spacing: 3px; color: #555; z-index: 2;
-  }
-
-  .log {
-    height: 140px; border: 1px solid var(--border); border-radius: 6px;
-    background: #080808; padding: 12px 16px; overflow-y: auto;
-    font-size: 11px; line-height: 1.8; color: #666;
-  }
+  .chart .c-label { position: absolute; top: 12px; left: 14px; font-size: 9px; letter-spacing: 3px; color: #555; z-index: 2; }
+  .chart .c-legend { position: absolute; top: 12px; right: 14px; font-size: 9px; letter-spacing: 2px; color: #555; z-index: 2; display: flex; gap: 14px; }
+  .chart .c-legend .lg { display: flex; align-items: center; gap: 6px; }
+  .chart .c-legend .lg-dot { width: 8px; height: 2px; background: var(--white); }
+  .chart .c-legend .lg-dot.p95 { background: var(--blue); }
+  .log { height: 140px; border: 1px solid var(--border); border-radius: 6px; background: #080808; padding: 12px 16px; overflow-y: auto; font-size: 11px; line-height: 1.8; color: #666; }
   .log::-webkit-scrollbar { width: 4px; }
   .log::-webkit-scrollbar-thumb { background: #222; }
   .log .line { display: block; }
@@ -280,121 +159,102 @@
   .log .line.err { color: var(--err); }
   .log .line.ok { color: var(--ok); }
   .log .line.warn { color: var(--warn); }
-
-  .modal-overlay {
-    position: fixed; inset:0; background: rgba(0,0,0,0.88);
-    backdrop-filter: blur(10px); z-index: 9000;
-    display: none; align-items: center; justify-content: center;
-    padding: 20px; overflow-y: auto;
-  }
+  .modal-overlay { position: fixed; inset:0; background: rgba(0,0,0,0.88); backdrop-filter: blur(10px); z-index: 9000; display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
   .modal-overlay.active { display: flex; }
-  .modal-report {
-    background: #0a0a0a;
-    border: 1px solid #222;
-    border-radius: 8px;
-    padding: 28px;
-    width: 100%; max-width: 720px;
-    max-height: 88vh; overflow-y: auto;
-    animation: modalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  @keyframes modalIn {
-    from { opacity:0; transform: translateY(24px); }
-    to { opacity:1; transform: translateY(0); }
-  }
+  .modal-report { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 28px; width: 100%; max-width: 780px; max-height: 88vh; overflow-y: auto; animation: modalIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes modalIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
   .modal-report::-webkit-scrollbar { width: 6px; }
   .modal-report::-webkit-scrollbar-thumb { background: #222; }
-  .report-head {
-    display: flex; justify-content: space-between;
-    align-items: center; margin-bottom: 22px;
-    padding-bottom: 16px; border-bottom: 1px solid #1a1a1a;
-  }
-  .report-head h2 {
-    font-size: 14px; letter-spacing: 5px;
-    font-weight: 900; color: var(--white);
-  }
-  .report-close {
-    background: transparent; border: 1px solid #222; color: #666;
-    font-family: inherit; font-size: 11px; letter-spacing: 2px;
-    padding: 6px 12px; border-radius: 4px; cursor: pointer;
-  }
+  .report-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid #1a1a1a; }
+  .report-head h2 { font-size: 14px; letter-spacing: 5px; font-weight: 900; color: var(--white); }
+  .report-close { background: transparent; border: 1px solid #222; color: #666; font-family: inherit; font-size: 11px; letter-spacing: 2px; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
   .report-close:hover { color: var(--white); border-color: #444; }
-
   .report-section { margin-bottom: 22px; }
-  .report-section h3 {
-    font-size: 10px; letter-spacing: 4px; color: #666;
-    margin-bottom: 12px; text-transform: uppercase;
-  }
-  .report-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  }
-  .report-cell {
-    padding: 12px;
-    border: 1px solid #1a1a1a; border-radius: 4px;
-    background: #0d0d0d;
-  }
-  .report-cell .rc-label {
-    font-size: 9px; letter-spacing: 2px; color: #555; margin-bottom: 6px;
-  }
-  .report-cell .rc-val {
-    font-size: 18px; font-weight: 900; color: var(--white);
-  }
+  .report-section h3 { font-size: 10px; letter-spacing: 4px; color: #666; margin-bottom: 12px; text-transform: uppercase; }
+  .report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .report-cell { padding: 12px; border: 1px solid #1a1a1a; border-radius: 4px; background: #0d0d0d; }
+  .report-cell .rc-label { font-size: 9px; letter-spacing: 2px; color: #555; margin-bottom: 6px; }
+  .report-cell .rc-val { font-size: 18px; font-weight: 900; color: var(--white); }
   .report-cell .rc-val.good { color: var(--ok); }
   .report-cell .rc-val.warn { color: var(--warn); }
   .report-cell .rc-val.bad { color: var(--err); }
 
-  .rec-box {
-    border: 1px solid #1a1a1a; border-left: 2px solid var(--warn);
-    border-radius: 4px; padding: 14px; background: #0d0d0d;
-    font-size: 12px; line-height: 1.8; color: #b0b0b0;
+  /* score */
+  .score-box {
+    display: flex; align-items: center; gap: 24px;
+    padding: 20px; border: 1px solid #1a1a1a; border-radius: 6px; background: #0d0d0d;
   }
+  .score-circle {
+    width: 90px; height: 90px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 900;
+    border: 3px solid;
+    flex-shrink: 0;
+  }
+  .score-circle.good { color: var(--ok); border-color: var(--ok); }
+  .score-circle.warn { color: var(--warn); border-color: var(--warn); }
+  .score-circle.bad { color: var(--err); border-color: var(--err); }
+  .score-bars { flex: 1; }
+  .score-bar { margin-bottom: 8px; }
+  .score-bar .sb-label { font-size: 9px; letter-spacing: 2px; color: #666; margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .score-bar .sb-track { height: 3px; background: #1a1a1a; border-radius: 2px; overflow: hidden; }
+  .score-bar .sb-fill { height: 100%; background: var(--white); border-radius: 2px; }
+  .score-bar .sb-fill.warn { background: var(--warn); }
+  .score-bar .sb-fill.bad { background: var(--err); }
+  .score-bar .sb-fill.good { background: var(--ok); }
+
+  /* waterfall */
+  .waterfall {
+    border: 1px solid #1a1a1a; border-radius: 4px; background: #0d0d0d;
+    padding: 14px; font-size: 11px;
+  }
+  .wf-row {
+    display: grid; grid-template-columns: 130px 1fr 80px;
+    align-items: center; gap: 12px; padding: 6px 0;
+    border-bottom: 1px solid #141414;
+  }
+  .wf-row:last-child { border-bottom: none; }
+  .wf-label { color: #888; letter-spacing: 1px; }
+  .wf-bar-wrap { background: #111; height: 4px; border-radius: 2px; overflow: hidden; }
+  .wf-bar { height: 100%; background: var(--white); border-radius: 2px; }
+  .wf-bar.warn { background: var(--warn); }
+  .wf-bar.bad { background: var(--err); }
+  .wf-val { text-align: right; color: var(--white); font-weight: 700; font-size: 11px; }
+
+  /* benchmark */
+  .bench { font-size: 11px; line-height: 1.9; color: #999; }
+  .bench-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #141414; }
+  .bench-row:last-child { border-bottom: none; }
+  .bench-row .bv { color: var(--white); font-weight: 700; }
+  .bench-row .bv.good { color: var(--ok); }
+  .bench-row .bv.bad { color: var(--err); }
+
+  .rec-box { border: 1px solid #1a1a1a; border-left: 2px solid var(--warn); border-radius: 4px; padding: 14px; background: #0d0d0d; font-size: 12px; line-height: 1.8; color: #b0b0b0; }
   .rec-box.good { border-left-color: var(--ok); }
   .rec-box.bad { border-left-color: var(--err); }
-
-  .errors-list {
-    font-size: 11px; line-height: 2; color: #999;
-  }
-  .errors-list .e-row {
-    display: flex; justify-content: space-between;
-    padding: 6px 0; border-bottom: 1px solid #141414;
-  }
-  .errors-list .e-code { color: var(--err); font-weight: 700; }
+  .errors-list { font-size: 11px; line-height: 2; color: #999; }
+  .errors-list .e-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #141414; }
   .errors-list .e-count { color: var(--white); font-weight: 700; }
-
-  .report-actions {
-    display: flex; gap: 10px;
-    padding-top: 16px; border-top: 1px solid #1a1a1a;
-  }
-  .report-btn {
-    flex: 1; background: transparent;
-    border: 1px solid #222; color: #999;
-    font-family: inherit; font-size: 11px;
-    letter-spacing: 3px; padding: 12px;
-    border-radius: 4px; cursor: pointer;
-    transition: all 0.25s;
-  }
+  .report-actions { display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid #1a1a1a; }
+  .report-btn { flex: 1; background: transparent; border: 1px solid #222; color: #999; font-family: inherit; font-size: 11px; letter-spacing: 3px; padding: 12px; border-radius: 4px; cursor: pointer; transition: all 0.25s; }
   .report-btn:hover { color: var(--white); border-color: #444; background: #0d0d0d; }
   .report-btn.primary { background: var(--white); color: var(--black); border-color: var(--white); font-weight: 900; }
   .report-btn.primary:hover { background: #fff; }
-
-  .head-right {
-    display: flex; align-items: center; gap: 14px;
-  }
-  .head-btn {
-    background: transparent; border: 1px solid #1a1a1a;
-    color: #888; font-family: inherit; font-size: 10px;
-    letter-spacing: 2px; padding: 8px 14px;
-    border-radius: 4px; cursor: pointer;
-    transition: all 0.25s;
-  }
+  .head-right { display: flex; align-items: center; gap: 14px; }
+  .head-btn { background: transparent; border: 1px solid #1a1a1a; color: #888; font-family: inherit; font-size: 10px; letter-spacing: 2px; padding: 8px 14px; border-radius: 4px; cursor: pointer; transition: all 0.25s; }
   .head-btn:hover { color: var(--white); border-color: #444; }
 
+  /* ladder stage indicator */
+  .ladder-indicator {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; letter-spacing: 3px; color: var(--warn);
+    background: #0d0d0d; border: 1px solid #2a2a2a; padding: 5px 12px;
+    border-radius: 3px; z-index: 3; display: none;
+  }
+  .ladder-indicator.show { display: block; }
+
   @media (max-width: 900px) {
-    .app {
-      grid-template-columns: 1fr;
-      grid-template-rows: 60px auto 1fr;
-      grid-template-areas: "head" "side" "main";
-      height: auto; min-height: 100vh;
-    }
+    .app { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; grid-template-areas: "head" "side" "main"; height: auto; min-height: 100vh; }
     .side { border-right: none; border-bottom: 1px solid var(--border); }
     .metrics { grid-template-columns: repeat(2, 1fr); }
     .report-grid { grid-template-columns: 1fr 1fr; }
@@ -462,7 +322,7 @@
     </div>
 
     <div class="field">
-      <label>Telegram Chat ID (для уведомлений)</label>
+      <label>Telegram Chat ID</label>
       <input type="text" id="tg" placeholder="узнай у @userinfobot" spellcheck="false">
     </div>
 
@@ -510,6 +370,7 @@
     </div>
 
     <button class="run" id="runBtn" disabled>START TEST</button>
+    <button class="run ladder" id="ladderBtn" disabled>НАЙТИ ПРЕДЕЛ</button>
     <button class="stop" id="stopBtn">STOP</button>
   </aside>
 
@@ -535,6 +396,11 @@
 
     <div class="chart">
       <div class="c-label">RPS / TIME</div>
+      <div class="c-legend">
+        <div class="lg"><span class="lg-dot"></span>RPS</div>
+        <div class="lg"><span class="lg-dot p95"></span>P95</div>
+      </div>
+      <div class="ladder-indicator" id="ladderIndicator">СТУПЕНЬ: <span id="ladderStage">—</span></div>
       <canvas id="chart"></canvas>
     </div>
 
@@ -562,6 +428,7 @@ const cookieEl = $('cookie');
 const headersEl = $('headers');
 const tgEl = $('tg');
 const runBtn = $('runBtn');
+const ladderBtn = $('ladderBtn');
 const stopBtn = $('stopBtn');
 const profilesBox = $('profiles');
 const patternsBox = $('patterns');
@@ -574,6 +441,8 @@ const logEl = $('log');
 const statusEl = $('status');
 const statusText = $('statusText');
 const hintEl = $('hint');
+const ladderIndicator = $('ladderIndicator');
+const ladderStageEl = $('ladderStage');
 
 let running = false;
 let pps = 200;
@@ -583,7 +452,9 @@ let pattern = 'steady';
 let strict = false;
 let testId = null;
 let pollTimer = null;
+let streamTimer = null;
 let lastReport = null;
+let isLadder = false;
 
 // ============ PRELOADER ============
 const preLogLines = [
@@ -612,83 +483,51 @@ const preTimer = setInterval(() => {
   preIdx++;
 }, 450);
 
-// ============ АНАЛИЗ ТАРГЕТА ============
+// ============ АНАЛИЗ ============
 function analyzeTarget(url) {
   const raw = url.trim();
   if (!raw) return null;
-
   const result = {
-    type: 'website',
-    typeName: 'Обычный сайт',
-    recommendedPattern: 'steady',
-    recommendedProfile: 'medium',
-    recommendedPps: 200,
-    recommendedMethod: 'GET',
-    warnings: [],
-    reason: []
+    type: 'website', typeName: 'Обычный сайт',
+    recommendedPattern: 'steady', recommendedProfile: 'medium', recommendedPps: 200,
+    warnings: [], reason: []
   };
-
   if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(raw)) {
-    result.type = 'ip';
-    result.typeName = 'IP-адрес';
-    result.recommendedPattern = 'ramp';
-    result.recommendedProfile = 'light';
-    result.recommendedPps = 100;
+    result.type = 'ip'; result.typeName = 'IP-адрес';
+    result.recommendedPattern = 'ramp'; result.recommendedProfile = 'light'; result.recommendedPps = 100;
     result.reason.push('Прямое обращение к IP — тестируем сервер.');
     result.warnings.push('Тестируй только своё железо.');
     return result;
   }
-
   let u;
-  try {
-    u = new URL(raw.startsWith('http') ? raw : 'https://' + raw);
-  } catch {
-    result.warnings.push('Не могу распарсить URL. Формат: https://example.com');
-    return result;
-  }
-
-  const host = u.hostname;
-  const path = u.pathname;
-  const port = u.port;
-
+  try { u = new URL(raw.startsWith('http') ? raw : 'https://' + raw); }
+  catch { result.warnings.push('Не могу распарсить URL.'); return result; }
+  const host = u.hostname, path = u.pathname, port = u.port;
   if (/\/api\//i.test(path) || /^api\./i.test(host) || port === '8080' || port === '3000' || port === '5000') {
-    result.type = 'api';
-    result.typeName = 'API';
+    result.type = 'api'; result.typeName = 'API';
     result.recommendedPattern = 'ramp';
-    result.recommendedProfile = 'medium';
-    result.recommendedPps = 200;
     result.reason.push('Похоже на API — RAMP найдёт предел.');
-    result.reason.push('Для POST/PUT переключи Method и впиши Body.');
     return result;
   }
-
   const big = ['google.com','youtube.com','facebook.com','amazon.com','microsoft.com','apple.com','cloudflare.com','twitter.com','instagram.com','tiktok.com','github.com'];
   if (big.some(g => host === g || host.endsWith('.' + g))) {
-    result.type = 'big';
-    result.typeName = 'Крупный сервис';
+    result.type = 'big'; result.typeName = 'Крупный сервис';
     result.warnings.push('Это чужой крупный сервис. Тестирование без разрешения — уголовка.');
     result.warnings.push('Для демо используй example.com');
-    result.recommendedProfile = 'light';
-    result.recommendedPps = 50;
+    result.recommendedProfile = 'light'; result.recommendedPps = 50;
     return result;
   }
-
   if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
-    result.type = 'local';
-    result.typeName = 'Локальная сеть';
-    result.warnings.push('Render не достучится до твоего localhost. Тест не пройдёт.');
+    result.type = 'local'; result.typeName = 'Локальная сеть';
+    result.warnings.push('Render не достучится до localhost.');
     return result;
   }
-
   if (host === 'example.com' || host.endsWith('.example.com')) {
     result.typeName = 'Тестовый домен';
     result.reason.push('example.com — официальный тестовый домен.');
-    result.reason.push('MEDIUM + STEADY, 30 сек — базовый сценарий.');
     return result;
   }
-
   result.reason.push('Обычный сайт. Начни с MEDIUM + STEADY.');
-  result.reason.push('Если держит — переключай на HEAVY.');
   return result;
 }
 
@@ -757,7 +596,9 @@ strictToggle.addEventListener('click', () => {
 });
 
 function updateRunBtn() {
-  runBtn.disabled = !(targetEl.value.trim() && !running);
+  const has = targetEl.value.trim() && !running;
+  runBtn.disabled = !has;
+  ladderBtn.disabled = !has;
 }
 
 function log(text, cls = '') {
@@ -771,10 +612,11 @@ function log(text, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// ============ ГРАФИК ============
+// ============ ГРАФИК (RPS + P95) ============
 const canvas = $('chart');
 const ctx = canvas.getContext('2d');
-let chartData = [];
+let chartRps = [];
+let chartP95 = [];
 const MAX_POINTS = 120;
 
 function resizeCanvas() {
@@ -796,32 +638,50 @@ function drawChart() {
     const y = (h / 4) * i;
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
   }
-  if (chartData.length < 2) return;
-  const max = Math.max(...chartData, 1);
+  if (chartRps.length < 2) return;
+
+  const maxRps = Math.max(...chartRps, 1);
+  const maxP95 = Math.max(...chartP95, 1);
   const step = w / (MAX_POINTS - 1);
+
+  // RPS — белая заливка + линия
   ctx.beginPath();
   ctx.moveTo(0, h);
-  chartData.forEach((v, i) => {
+  chartRps.forEach((v, i) => {
     const x = i * step;
-    const y = h - (v / max) * (h - 20) - 10;
+    const y = h - (v / maxRps) * (h - 20) - 10;
     ctx.lineTo(x, y);
   });
-  ctx.lineTo((chartData.length - 1) * step, h);
+  ctx.lineTo((chartRps.length - 1) * step, h);
   ctx.closePath();
   const grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, 'rgba(255,255,255,0.12)');
+  grad.addColorStop(0, 'rgba(255,255,255,0.10)');
   grad.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = grad;
   ctx.fill();
+
   ctx.beginPath();
-  chartData.forEach((v, i) => {
+  chartRps.forEach((v, i) => {
     const x = i * step;
-    const y = h - (v / max) * (h - 20) - 10;
+    const y = h - (v / maxRps) * (h - 20) - 10;
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
   ctx.strokeStyle = '#ededed';
   ctx.lineWidth = 1.5;
   ctx.stroke();
+
+  // P95 — синяя линия
+  if (chartP95.length > 1) {
+    ctx.beginPath();
+    chartP95.forEach((v, i) => {
+      const x = i * step;
+      const y = h - (v / maxP95) * (h - 20) - 10;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = 'rgba(96,165,250,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
 }
 
 const rpsEl = $('rps');
@@ -834,16 +694,59 @@ function setStatus(text, cls = '') {
   statusEl.className = 'status ' + cls;
 }
 
-// ============ START ============
-async function startTest() {
+// ============ СТРИМИНГ ============
+async function pollStream() {
+  if (!testId) return;
+  try {
+    const res = await fetch(API_BASE + '/api/stream/' + testId);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.lines || !data.lines.length) return;
+
+    // считаем новые http_reqs + duration в окне
+    let reqCount = 0;
+    let p95sum = 0;
+    let p95count = 0;
+
+    for (const line of data.lines) {
+      if (line.type !== 'Point') continue;
+      if (line.metric === 'http_reqs') {
+        reqCount++;
+      } else if (line.metric === 'http_req_duration') {
+        p95sum += line.data?.value || 0;
+        p95count++;
+      }
+    }
+
+    // грубо: кол-во req за период / длительность окна
+    if (reqCount > 0) {
+      const approxRps = Math.round(reqCount * 2);
+      chartRps.push(approxRps);
+      if (chartRps.length > MAX_POINTS) chartRps.shift();
+      rpsEl.textContent = approxRps;
+    }
+
+    if (p95count > 0) {
+      const avg = p95sum / p95count;
+      chartP95.push(avg);
+      if (chartP95.length > MAX_POINTS) chartP95.shift();
+    }
+
+    drawChart();
+  } catch (e) {
+    // тихо, чтобы не спамить
+  }
+}
+
+// ============ СТАРТ ============
+async function startTest(ladder = false) {
   if (running) return;
+  isLadder = ladder;
 
   let headers = {};
   if (headersEl.value.trim()) {
-    try { headers = JSON.parse(headersEl.value); }
-    catch { log('headers JSON невалиден — игнорирую', 'warn'); headers = {}; }
+    try { headers = JSON.parse(headersEl.value); } catch { log('headers JSON невалиден — игнорирую', 'warn'); headers = {}; }
   }
-
   let body = '';
   if (bodyEl.value.trim() && (methodEl.value === 'POST' || methodEl.value === 'PUT')) {
     body = bodyEl.value.trim();
@@ -864,18 +767,31 @@ async function startTest() {
     tg_chat_id: tgEl.value.trim() || null
   };
 
-  consLog('POST /api/start', payload, '#4ade80');
-  log(`POST <b>${API_BASE}/api/start</b>`, 'ok');
-  log(`target=${payload.target} · ${payload.pps}rps · ${payload.duration}s · ${payload.pattern}`);
+  if (ladder) {
+    // лестница: [50, 200, 500, 1200]
+    payload.steps = [50, 200, 500, 1200];
+    payload.duration = Math.max(60, duration); // минимум 60 для лестницы
+  }
+
+  consLog(ladder ? 'POST /api/start (LADDER)' : 'POST /api/start', payload, '#4ade80');
+  log(`${ladder ? 'ЛЕСТНИЦА' : 'ТЕСТ'} → <b>${payload.target}</b>`, 'ok');
+  if (ladder) {
+    log(`ступени: 50 → 200 → 500 → 1200 RPS · по ${Math.floor(payload.duration / 4)}с`, 'warn');
+    ladderIndicator.classList.add('show');
+    ladderStageEl.textContent = 'LIGHT';
+  }
 
   running = true;
-  chartData = [];
+  chartRps = [];
+  chartP95 = [];
   rpsEl.textContent = '0';
   latencyEl.innerHTML = '0<span class="m-unit">ms</span>';
   errorsEl.innerHTML = '0<span class="m-unit">%</span>';
   elapsedEl.innerHTML = '0<span class="m-unit">s</span>';
   runBtn.disabled = true;
+  ladderBtn.disabled = true;
   runBtn.textContent = 'RUNNING';
+  ladderBtn.textContent = 'RUNNING';
   stopBtn.classList.add('active');
   setStatus('STARTING', 'online');
   ['m1','m2','m3','m4'].forEach(id => $(id).classList.add('active'));
@@ -886,18 +802,13 @@ async function startTest() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    consLog('response status', res.status, res.ok ? '#4ade80' : '#f87171');
-    if (!res.ok) {
-      const txt = await res.text();
-      consLog('error body', txt, '#f87171');
-      throw new Error('HTTP ' + res.status);
-    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    consLog('test accepted', data, '#4ade80');
     testId = data.id;
     log(`test accepted · id = <b>${testId}</b>`, 'ok');
-    setStatus('RUNNING', 'online');
+    setStatus(ladder ? 'LADDER' : 'RUNNING', 'online');
     pollTimer = setInterval(pollStatus, 500);
+    streamTimer = setInterval(pollStream, 1000);
   } catch (e) {
     consLog('START FAILED', e.message, '#f87171');
     log('ошибка: ' + e.message, 'err');
@@ -912,36 +823,32 @@ async function pollStatus() {
     const res = await fetch(API_BASE + '/api/status/' + testId);
     if (!res.ok) return;
     const data = await res.json();
-    consLog('poll', { status: data.status, elapsed: data.elapsed });
-
     elapsedEl.innerHTML = Math.floor(data.elapsed) + '<span class="m-unit">s</span>';
 
-    if (data.status === 'running') {
-      const approx = Math.round(pps * (0.85 + Math.random() * 0.3));
-      rpsEl.textContent = approx;
-      chartData.push(approx);
-      if (chartData.length > MAX_POINTS) chartData.shift();
-      drawChart();
+    // для лестницы показываем текущую ступень
+    if (isLadder && data.status === 'running') {
+      const prog = data.elapsed / (duration || 1);
+      let stage = 'LIGHT';
+      if (prog > 0.25) stage = 'MEDIUM';
+      if (prog > 0.5) stage = 'HEAVY';
+      if (prog > 0.75) stage = 'EXTREME';
+      ladderStageEl.textContent = stage;
     }
 
     if (['finished','timeout','stopped','error'].includes(data.status)) {
-      clearInterval(pollTimer);
-      pollTimer = null;
+      clearInterval(pollTimer); pollTimer = null;
+      clearInterval(streamTimer); streamTimer = null;
       consLog('FINAL', data.summary, '#4ade80');
       finishTest(data);
     }
-  } catch (e) {
-    consLog('poll error', e.message, '#f87171');
-  }
+  } catch (e) { consLog('poll error', e.message, '#f87171'); }
 }
 
 async function stopTest() {
   if (!testId) { resetUI(); return; }
-  consLog('POST /api/stop/' + testId, {}, '#ffaa00');
-  log('останавливаю...', 'warn');
-  try { await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' }); }
-  catch (e) { consLog('stop failed', e.message, '#f87171'); }
+  try { await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' }); } catch {}
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (streamTimer) { clearInterval(streamTimer); streamTimer = null; }
   setStatus('STOPPED', '');
   resetUI();
 }
@@ -949,22 +856,31 @@ async function stopTest() {
 function resetUI() {
   running = false;
   runBtn.disabled = false;
+  ladderBtn.disabled = false;
   runBtn.textContent = 'START TEST';
+  ladderBtn.textContent = 'НАЙТИ ПРЕДЕЛ';
   stopBtn.classList.remove('active');
+  ladderIndicator.classList.remove('show');
   ['m1','m2','m3','m4'].forEach(id => $(id).classList.remove('active'));
   updateRunBtn();
   testId = null;
 }
 
-// ============ FINISH + ОТЧЁТ (ИСПРАВЛЕНО) ============
+// ============ ФИНАЛИЗАЦИЯ ============
 function finishTest(data) {
   const s = data.summary || {};
   const m = s.metrics || {};
-
-  // новая версия k6 кладёт метрики ПРЯМО в объект, без .values
   const reqs = m.http_reqs || {};
   const dur = m.http_req_duration || {};
   const failed = m.http_req_failed || {};
+
+  // waterfall метрики
+  const blocked = m.http_req_blocked || {};
+  const connecting = m.http_req_connecting || {};
+  const tls = m.http_req_tls_handshaking || {};
+  const waiting = m.http_req_waiting || {};
+  const receiving = m.http_req_receiving || {};
+  const sending = m.http_req_sending || {};
 
   const realRps = Math.round(reqs.rate || 0);
   const total = reqs.count || 0;
@@ -974,8 +890,6 @@ function finishTest(data) {
   const avg = Math.round(dur.avg || 0);
   const min = Math.round(dur.min || 0);
   const max = Math.round(dur.max || 0);
-
-  // http_req_failed: value = доля ошибок (0..1), passes = сколько упало
   const errRate = ((failed.value || 0) * 100).toFixed(2);
   const errCount = failed.passes || 0;
   const okCount = total - errCount;
@@ -987,8 +901,6 @@ function finishTest(data) {
   log('──────── test completed ────────', 'ok');
   log(`RPS: <b>${realRps}</b> · всего: <b>${total}</b>`);
   log(`P50: <b>${p50}ms</b> · P95: <b>${p95}ms</b> · P99: <b>${p99}ms</b>`);
-  log(`avg: ${avg}ms · min: ${min}ms · max: ${max}ms`);
-  log(`успешных: <b>${okCount}</b> · ошибок: <b>${errCount}</b> (${errRate}%)`);
 
   const report = {
     id: testId,
@@ -997,90 +909,160 @@ function finishTest(data) {
     method: methodEl.value,
     pps: pps,
     duration: duration,
-    pattern: pattern,
+    pattern: isLadder ? 'ladder' : pattern,
     timeout: timeout,
     strict: strict,
+    isLadder,
     rps: realRps,
-    total: total,
-    p50, p95, p99, avg, min, max,
+    total, p50, p95, p99, avg, min, max,
     errors: errCount,
     errorRate: parseFloat(errRate),
-    okCount
+    okCount,
+    waterfall: {
+      blocked: Math.round(blocked.avg || 0),
+      connecting: Math.round(connecting.avg || 0),
+      tls: Math.round(tls.avg || 0),
+      waiting: Math.round(waiting.avg || 0),
+      receiving: Math.round(receiving.avg || 0),
+      sending: Math.round(sending.avg || 0),
+      total: Math.round(dur.avg || 0)
+    },
+    recovery: data.recovery || null,
+    chartImg: canvas.toDataURL('image/png')
   };
 
   lastReport = report;
   saveHistory(report);
   showReport(report);
-
   setStatus('COMPLETE', '');
   resetUI();
 }
 
-// ============ РЕКОМЕНДАЦИИ (ИСПРАВЛЕНО) ============
+// ============ ОЦЕНКА В БАЛЛАХ ============
+function calcScore(r) {
+  let speed = 100, stability = 100, errors = 100;
+
+  // скорость: P95 <200ms = 100, >3000ms = 0
+  if (r.p95 > 0) {
+    speed = Math.max(0, Math.min(100, 100 - ((r.p95 - 200) / 2800) * 100));
+  }
+
+  // стабильность: max/p95 ratio. 1 = 100, >5 = 0
+  if (r.p95 > 0 && r.max > 0) {
+    const ratio = r.max / r.p95;
+    stability = Math.max(0, Math.min(100, 100 - ((ratio - 1) / 4) * 100));
+  }
+
+  // ошибки: 0% = 100, 10%+ = 0
+  errors = Math.max(0, Math.min(100, 100 - r.errorRate * 10));
+
+  // достигнуто от заданного RPS
+  if (r.pps > 0) {
+    const ratio = r.rps / r.pps;
+    const achieved = Math.max(0, Math.min(100, ratio * 100));
+    // снижаем общую если не дотянул
+    speed = speed * 0.6 + achieved * 0.4;
+  }
+
+  const total = Math.round((speed + stability + errors) / 3);
+  let mood = 'good';
+  if (total < 40) mood = 'bad';
+  else if (total < 70) mood = 'warn';
+
+  return { total, speed: Math.round(speed), stability: Math.round(stability), errors: Math.round(errors), mood };
+}
+
+// ============ РЕКОМЕНДАЦИИ ============
 function makeRecommendations(r) {
   const recs = [];
   let mood = 'good';
 
-  if (r.errorRate > 5) {
-    recs.push(`Сервер сыпет ошибками (${r.errorRate}%). Приложение не справляется с нагрузкой ${r.rps} RPS.`);
-    mood = 'bad';
-  } else if (r.errorRate > 1) {
-    recs.push(`Ошибки ${r.errorRate}% — сервер близок к пределу.`);
-    mood = 'warn';
-  } else {
-    recs.push(`Ошибок почти нет (${r.errorRate}%).`);
-  }
+  if (r.errorRate > 5) { recs.push(`Сервер сыпет ошибками (${r.errorRate}%).`); mood = 'bad'; }
+  else if (r.errorRate > 1) { recs.push(`Ошибки ${r.errorRate}% — близко к пределу.`); mood = 'warn'; }
+  else { recs.push(`Ошибок почти нет (${r.errorRate}%).`); }
 
-  if (r.p95 > 2000) {
-    recs.push(`P95 = ${r.p95}ms — критично. Пользователи ждут больше 2 секунд. Узкое место скорее всего БД или медленные запросы.`);
-    mood = 'bad';
-  } else if (r.p95 > 500) {
-    recs.push(`P95 = ${r.p95}ms — приемлемо для внутреннего API, но для публичного сайта медленно.`);
-    if (mood !== 'bad') mood = 'warn';
-  } else if (r.p95 > 0) {
-    recs.push(`P95 = ${r.p95}ms — хороший отклик.`);
-  }
+  if (r.p95 > 2000) { recs.push(`P95 = ${r.p95}ms — критично. Узкое место: ${dominantStage(r.waterfall)}.`); mood = 'bad'; }
+  else if (r.p95 > 500) { recs.push(`P95 = ${r.p95}ms — медленно. Узкое место: ${dominantStage(r.waterfall)}.`); if (mood !== 'bad') mood = 'warn'; }
+  else if (r.p95 > 0) { recs.push(`P95 = ${r.p95}ms — хороший отклик.`); }
 
   if (r.rps > 0 && r.pps > 0) {
     const ratio = Math.round(r.rps / r.pps * 100);
-    if (ratio < 50) {
-      recs.push(`Достигнуто только ${ratio}% от заданной нагрузки (${r.rps} из ${r.pps} RPS). Сервер не пропускает больше — упёрся в предел.`);
-      mood = 'bad';
-    } else if (ratio < 90) {
-      recs.push(`Достигнуто ${ratio}% от заданной нагрузки. Сервер близок к пределу.`);
+    if (ratio < 50) { recs.push(`Достигнуто только ${ratio}% от заданной нагрузки (${r.rps} из ${r.pps} RPS). Сервер упёрся в предел.`); mood = 'bad'; }
+    else if (ratio < 90) { recs.push(`Достигнуто ${ratio}% нагрузки. Сервер близок к пределу.`); if (mood !== 'bad') mood = 'warn'; }
+    else { recs.push(`Достигнуто ${ratio}% нагрузки — сервер справился.`); }
+  }
+
+  // восстановление
+  if (r.recovery) {
+    if (r.recovery.first_ok_after_sec !== null && r.recovery.first_ok_after_sec > 5) {
+      recs.push(`Сервер восстанавливался ${r.recovery.first_ok_after_sec}с после снятия нагрузки. Это много — рекомендация: healthcheck + автоскейлинг.`);
       if (mood !== 'bad') mood = 'warn';
+    } else if (r.recovery.available_percent < 90) {
+      recs.push(`После теста сервер был доступен только ${r.recovery.available_percent}% времени.`);
+      mood = 'bad';
     } else {
-      recs.push(`Достигнуто ${ratio}% от заданной нагрузки — сервер справился.`);
+      recs.push(`Сервер восстановился за ${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : 'мгновенно'}, доступность ${r.recovery.available_percent}%.`);
     }
   }
 
-  if (r.max > r.p99 * 3 && r.max > 1000) {
-    recs.push(`Максимум ${r.max}ms против P99 ${r.p99}ms — есть "хвосты". Возможно холодный старт или GC.`);
-  }
-
-  if (r.total > 0) {
-    recs.push(`Всего прогнали ${r.total} запросов за ${r.duration}s. Успешных ${r.okCount}, ошибок ${r.errors}.`);
-  }
-
-  if (mood === 'good') {
-    recs.push('Вывод: сервер стабилен. Можно поднять нагрузку до следующего профиля для проверки запаса.');
-  } else if (mood === 'warn') {
-    recs.push('Вывод: сервер на грани. Рекомендую оптимизировать перед продакшеном.');
-  } else {
-    recs.push('Вывод: сервер не справляется с этой нагрузкой. Нужна оптимизация: кэш, индексы БД, CDN, горизонтальное масштабирование.');
-  }
+  if (mood === 'good') recs.push('Вывод: сервер стабилен. Можно поднять нагрузку для проверки запаса.');
+  else if (mood === 'warn') recs.push('Вывод: сервер на грани. Рекомендую оптимизировать.');
+  else recs.push('Вывод: сервер не справляется. Нужна оптимизация: кэш, индексы БД, CDN, скейлинг.');
 
   return { mood, recs };
+}
+
+function dominantStage(w) {
+  if (!w) return '—';
+  const stages = [
+    { name: 'DNS/blocked', v: w.blocked },
+    { name: 'TCP connect', v: w.connecting },
+    { name: 'TLS handshake', v: w.tls },
+    { name: 'ожидание сервера', v: w.waiting },
+    { name: 'получение данных', v: w.receiving }
+  ];
+  stages.sort((a, b) => b.v - a.v);
+  return stages[0].name + ' (' + stages[0].v + 'ms)';
 }
 
 // ============ МОДАЛКА ОТЧЁТА ============
 function showReport(r) {
   const rec = makeRecommendations(r);
   const cls = rec.mood === 'good' ? 'good' : (rec.mood === 'bad' ? 'bad' : '');
+  const score = calcScore(r);
+
+  // benchmark
+  const benchP95 = 500, benchP99 = 1000, benchErr = 1;
+  const benchRow = (label, val, target, unit, lower_is_better = true) => {
+    const ok = lower_is_better ? val <= target : val >= target;
+    return `<div class="bench-row"><span>${label}</span><span class="bv ${ok ? 'good' : 'bad'}">${val}${unit} <span style="color:#666;font-weight:400">(цель ${lower_is_better ? '<' : '>'} ${target}${unit})</span></span></div>`;
+  };
+
+  const waterfallTotal = r.waterfall.total || 1;
+  const wfRow = (label, val) => {
+    const pct = Math.min(100, (val / waterfallTotal) * 100);
+    const cls = pct > 50 ? 'bad' : pct > 25 ? 'warn' : '';
+    return `<div class="wf-row">
+      <div class="wf-label">${label}</div>
+      <div class="wf-bar-wrap"><div class="wf-bar ${cls}" style="width:${pct}%"></div></div>
+      <div class="wf-val">${val}ms</div>
+    </div>`;
+  };
+
+  const recoveryHtml = r.recovery ? `
+    <div class="report-section">
+      <h3>Восстановление после теста</h3>
+      <div class="errors-list">
+        <div class="e-row"><span>Доступность после теста</span><span class="e-count">${r.recovery.available_percent}%</span></div>
+        <div class="e-row"><span>Первый успешный ответ</span><span class="e-count">${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : '—'}</span></div>
+        <div class="e-row"><span>Проверок всего</span><span class="e-count">${r.recovery.checks}</span></div>
+      </div>
+    </div>
+  ` : '';
 
   const html = `
     <div class="report-head">
-      <h2>ОТЧЁТ ТЕСТА</h2>
+      <h2>ОТЧЁТ${r.isLadder ? ' — ЛЕСТНИЦА' : ''}</h2>
       <button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button>
     </div>
 
@@ -1088,7 +1070,28 @@ function showReport(r) {
       <h3>Цель</h3>
       <div class="report-cell">
         <div class="rc-val" style="font-size:14px;word-break:break-all">${r.target}</div>
-        <div class="rc-label" style="margin-top:8px">${r.method} · ${r.pattern.toUpperCase()} · ${r.pps} RPS · ${r.duration}s · timeout ${r.timeout}s${r.strict ? ' · СТРОГИЙ' : ''}</div>
+        <div class="rc-label" style="margin-top:8px">${r.method} · ${r.pattern.toUpperCase()} · ${r.pps} RPS · ${r.duration}s${r.strict ? ' · СТРОГИЙ' : ''}</div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Оценка</h3>
+      <div class="score-box">
+        <div class="score-circle ${score.mood}">${score.total}</div>
+        <div class="score-bars">
+          <div class="score-bar">
+            <div class="sb-label"><span>СКОРОСТЬ</span><span>${score.speed}</span></div>
+            <div class="sb-track"><div class="sb-fill ${score.speed < 40 ? 'bad' : score.speed < 70 ? 'warn' : 'good'}" style="width:${score.speed}%"></div></div>
+          </div>
+          <div class="score-bar">
+            <div class="sb-label"><span>СТАБИЛЬНОСТЬ</span><span>${score.stability}</span></div>
+            <div class="sb-track"><div class="sb-fill ${score.stability < 40 ? 'bad' : score.stability < 70 ? 'warn' : 'good'}" style="width:${score.stability}%"></div></div>
+          </div>
+          <div class="score-bar">
+            <div class="sb-label"><span>ОШИБКИ</span><span>${score.errors}</span></div>
+            <div class="sb-track"><div class="sb-fill ${score.errors < 40 ? 'bad' : score.errors < 70 ? 'warn' : 'good'}" style="width:${score.errors}%"></div></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1108,6 +1111,29 @@ function showReport(r) {
     </div>
 
     <div class="report-section">
+      <h3>Waterfall — куда уходит время</h3>
+      <div class="waterfall">
+        ${wfRow('DNS / blocked', r.waterfall.blocked)}
+        ${wfRow('TCP connect', r.waterfall.connecting)}
+        ${wfRow('TLS handshake', r.waterfall.tls)}
+        ${wfRow('Ожидание сервера', r.waterfall.waiting)}
+        ${wfRow('Получение данных', r.waterfall.receiving)}
+        ${wfRow('Отправка запроса', r.waterfall.sending)}
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#888">Узкое место: <b style="color:var(--white)">${dominantStage(r.waterfall)}</b></div>
+    </div>
+
+    <div class="report-section">
+      <h3>Сравнение с benchmark</h3>
+      <div class="bench">
+        ${benchRow('P95 latency', r.p95, benchP95, 'ms', true)}
+        ${benchRow('P99 latency', r.p99, benchP99, 'ms', true)}
+        ${benchRow('Error rate', r.errorRate, benchErr, '%', true)}
+        <div style="margin-top:8px;font-size:10px;color:#555">Benchmark: типичные production-сайты в индустрии</div>
+      </div>
+    </div>
+
+    <div class="report-section">
       <h3>Счётчики</h3>
       <div class="errors-list">
         <div class="e-row"><span>Успешных</span><span class="e-count" style="color:var(--ok)">${r.okCount}</span></div>
@@ -1115,10 +1141,19 @@ function showReport(r) {
       </div>
     </div>
 
+    ${recoveryHtml}
+
     <div class="report-section">
       <h3>Рекомендации</h3>
       <div class="rec-box ${cls}">
         ${rec.recs.map(x => `· ${x}`).join('<br>')}
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>График</h3>
+      <div style="border:1px solid #1a1a1a;border-radius:4px;padding:8px;background:#0d0d0d">
+        <img src="${r.chartImg}" style="width:100%;display:block;border-radius:3px">
       </div>
     </div>
 
@@ -1142,6 +1177,7 @@ function buildTextReport() {
   const r = lastReport;
   if (!r) return '';
   const rec = makeRecommendations(r);
+  const score = calcScore(r);
   return `
 ═══════════════════════════════════════════════
               LOAD TESTER — ОТЧЁТ
@@ -1154,8 +1190,12 @@ ID теста:    ${r.id}
 Паттерн:     ${r.pattern}
 Нагрузка:    ${r.pps} RPS
 Длительность: ${r.duration}s
-Timeout:     ${r.timeout}s
-Строгий:     ${r.strict ? 'да' : 'нет'}
+
+─────────────── ОЦЕНКА ───────────────
+ОБЩАЯ: ${score.total}/100
+Скорость: ${score.speed}/100
+Стабильность: ${score.stability}/100
+Ошибки: ${score.errors}/100
 
 ─────────────── МЕТРИКИ ───────────────
 RPS:            ${r.rps}
@@ -1170,6 +1210,20 @@ Latency P50:    ${r.p50} ms
 Latency P95:    ${r.p95} ms
 Latency P99:    ${r.p99} ms
 Latency max:    ${r.max} ms
+
+─────────────── WATERFALL ───────────────
+DNS/blocked:       ${r.waterfall.blocked} ms
+TCP connect:       ${r.waterfall.connecting} ms
+TLS handshake:     ${r.waterfall.tls} ms
+Ожидание сервера:  ${r.waterfall.waiting} ms
+Получение данных:  ${r.waterfall.receiving} ms
+Отправка:          ${r.waterfall.sending} ms
+Узкое место:       ${dominantStage(r.waterfall)}
+
+${r.recovery ? `─────────────── ВОССТАНОВЛЕНИЕ ───────────────
+Доступность:       ${r.recovery.available_percent}%
+Первый OK:         ${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : '—'}
+` : ''}
 
 ─────────────── РЕКОМЕНДАЦИИ ───────────────
 ${rec.recs.map(x => '· ' + x).join('\n')}
@@ -1189,13 +1243,13 @@ function exportTXT() {
   a.download = `loadtest_${lastReport.id}_${Date.now()}.txt`;
   a.click();
   URL.revokeObjectURL(url);
-  consLog('TXT exported', a.download, '#4ade80');
 }
 
 function exportPDF() {
   const r = lastReport;
   if (!r) return;
   const rec = makeRecommendations(r);
+  const score = calcScore(r);
 
   const html = `
     <html><head><meta charset="utf-8"><title>Load Test Report ${r.id}</title>
@@ -1206,10 +1260,20 @@ function exportPDF() {
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
       td { padding: 8px 0; border-bottom: 1px solid #ddd; font-size: 13px; }
       td:last-child { text-align: right; font-weight: bold; }
+      .score { text-align: center; font-size: 48px; font-weight: 900; margin: 20px 0; }
+      .score small { font-size: 14px; color: #888; display: block; }
       .rec { margin-top: 10px; padding: 14px; border-left: 3px solid #666; background: #f5f5f5; line-height: 1.8; }
+      .chart { text-align: center; margin: 20px 0; }
+      .chart img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
       .footer { margin-top: 40px; font-size: 11px; color: #888; text-align: center; }
     </style></head><body>
       <h1>LOAD TEST — ОТЧЁТ</h1>
+
+      <div class="score">
+        ${score.total}/100
+        <small>Скорость ${score.speed} · Стабильность ${score.stability} · Ошибки ${score.errors}</small>
+      </div>
+
       <h2>ЦЕЛЬ</h2>
       <table>
         <tr><td>URL</td><td>${r.target}</td></tr>
@@ -1219,21 +1283,35 @@ function exportPDF() {
         <tr><td>Длительность</td><td>${r.duration}s</td></tr>
         <tr><td>Дата</td><td>${new Date(r.date).toLocaleString('ru-RU')}</td></tr>
       </table>
+
       <h2>МЕТРИКИ</h2>
       <table>
         <tr><td>RPS</td><td>${r.rps}</td></tr>
         <tr><td>Всего запросов</td><td>${r.total}</td></tr>
         <tr><td>Успешных</td><td>${r.okCount}</td></tr>
         <tr><td>Ошибок</td><td>${r.errors} (${r.errorRate}%)</td></tr>
-        <tr><td>Latency avg</td><td>${r.avg} ms</td></tr>
-        <tr><td>Latency P50</td><td>${r.p50} ms</td></tr>
-        <tr><td>Latency P95</td><td>${r.p95} ms</td></tr>
-        <tr><td>Latency P99</td><td>${r.p99} ms</td></tr>
-        <tr><td>Latency min</td><td>${r.min} ms</td></tr>
-        <tr><td>Latency max</td><td>${r.max} ms</td></tr>
+        <tr><td>P50</td><td>${r.p50} ms</td></tr>
+        <tr><td>P95</td><td>${r.p95} ms</td></tr>
+        <tr><td>P99</td><td>${r.p99} ms</td></tr>
+        <tr><td>avg / min / max</td><td>${r.avg} / ${r.min} / ${r.max} ms</td></tr>
       </table>
+
+      <h2>WATERFALL</h2>
+      <table>
+        <tr><td>DNS/blocked</td><td>${r.waterfall.blocked} ms</td></tr>
+        <tr><td>TCP connect</td><td>${r.waterfall.connecting} ms</td></tr>
+        <tr><td>TLS handshake</td><td>${r.waterfall.tls} ms</td></tr>
+        <tr><td>Ожидание сервера</td><td>${r.waterfall.waiting} ms</td></tr>
+        <tr><td>Получение данных</td><td>${r.waterfall.receiving} ms</td></tr>
+        <tr><td>Узкое место</td><td>${dominantStage(r.waterfall)}</td></tr>
+      </table>
+
+      <h2>ГРАФИК</h2>
+      <div class="chart"><img src="${r.chartImg}"></div>
+
       <h2>РЕКОМЕНДАЦИИ</h2>
       <div class="rec">${rec.recs.map(x => '· ' + x).join('<br>')}</div>
+
       <div class="footer">Сгенерировано LOAD TESTER · ${API_BASE}</div>
     </body></html>
   `;
@@ -1241,13 +1319,11 @@ function exportPDF() {
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
-  setTimeout(() => { w.print(); }, 300);
-  consLog('PDF: открыл окно печати', {}, '#4ade80');
+  setTimeout(() => { w.print(); }, 500);
 }
 
 // ============ ИСТОРИЯ ============
 const HISTORY_KEY = 'lt_history_v1';
-
 function saveHistory(r) {
   let h = [];
   try { h = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch {}
@@ -1255,23 +1331,14 @@ function saveHistory(r) {
   h = h.slice(0, 50);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
 }
-
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
-
 function showHistory() {
   const h = loadHistory();
-  let html = `
-    <div class="report-head">
-      <h2>ИСТОРИЯ ТЕСТОВ</h2>
-      <button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button>
-    </div>
-  `;
-
-  if (!h.length) {
-    html += `<div class="rec-box">Пока пусто. Запусти первый тест — он появится здесь.</div>`;
-  } else {
+  let html = `<div class="report-head"><h2>ИСТОРИЯ ТЕСТОВ</h2><button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button></div>`;
+  if (!h.length) html += `<div class="rec-box">Пока пусто.</div>`;
+  else {
     html += `<div class="errors-list">`;
     h.forEach((r, i) => {
       const prev = h[i + 1];
@@ -1279,40 +1346,29 @@ function showHistory() {
       if (prev) {
         const dRps = r.rps - prev.rps;
         const dP95 = r.p95 - prev.p95;
-        if (dRps !== 0 || dP95 !== 0) {
-          delta = `<span style="color:#666;font-size:10px">Δ RPS ${dRps >= 0 ? '+' : ''}${dRps} · Δ P95 ${dP95 >= 0 ? '+' : ''}${dP95}ms</span>`;
-        }
+        if (dRps !== 0 || dP95 !== 0) delta = `<span style="color:#666;font-size:10px">Δ RPS ${dRps >= 0 ? '+' : ''}${dRps} · Δ P95 ${dP95 >= 0 ? '+' : ''}${dP95}ms</span>`;
       }
-      html += `
-        <div class="e-row" style="flex-direction:column;align-items:flex-start;padding:12px 0">
-          <div style="width:100%;display:flex;justify-content:space-between">
-            <span style="color:var(--white);font-weight:700">${r.target}</span>
-            <span style="color:#666;font-size:10px">${new Date(r.date).toLocaleString('ru-RU')}</span>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:6px;font-size:11px;color:#999">
-            <span>RPS: <b style="color:var(--white)">${r.rps}</b></span>
-            <span>P95: <b style="color:var(--white)">${r.p95}ms</b></span>
-            <span>ERR: <b style="color:var(--err)">${r.errorRate}%</b></span>
-            <span>${r.pattern.toUpperCase()}</span>
-          </div>
-          ${delta}
+      const score = calcScore(r);
+      html += `<div class="e-row" style="flex-direction:column;align-items:flex-start;padding:12px 0">
+        <div style="width:100%;display:flex;justify-content:space-between">
+          <span style="color:var(--white);font-weight:700">${r.target}</span>
+          <span style="color:${score.mood === 'good' ? 'var(--ok)' : score.mood === 'bad' ? 'var(--err)' : 'var(--warn)'};font-weight:700">${score.total}/100</span>
         </div>
-      `;
+        <div style="display:flex;gap:16px;margin-top:6px;font-size:11px;color:#999">
+          <span>RPS: <b style="color:var(--white)">${r.rps}</b></span>
+          <span>P95: <b style="color:var(--white)">${r.p95}ms</b></span>
+          <span>ERR: <b style="color:var(--err)">${r.errorRate}%</b></span>
+          <span>${new Date(r.date).toLocaleString('ru-RU')}</span>
+        </div>
+        ${delta}
+      </div>`;
     });
     html += `</div>`;
   }
-
-  html += `
-    <div class="report-actions">
-      <button class="report-btn" onclick="clearHistory()">ОЧИСТИТЬ ИСТОРИЮ</button>
-      <button class="report-btn" onclick="closeReport()">ЗАКРЫТЬ</button>
-    </div>
-  `;
-
+  html += `<div class="report-actions"><button class="report-btn" onclick="clearHistory()">ОЧИСТИТЬ</button><button class="report-btn" onclick="closeReport()">ЗАКРЫТЬ</button></div>`;
   $('reportBody').innerHTML = html;
   $('reportModal').classList.add('active');
 }
-
 function clearHistory() {
   localStorage.removeItem(HISTORY_KEY);
   closeReport();
@@ -1320,7 +1376,8 @@ function clearHistory() {
 }
 
 // ============ КНОПКИ ============
-runBtn.addEventListener('click', startTest);
+runBtn.addEventListener('click', () => startTest(false));
+ladderBtn.addEventListener('click', () => startTest(true));
 stopBtn.addEventListener('click', stopTest);
 $('historyBtn').addEventListener('click', showHistory);
 
