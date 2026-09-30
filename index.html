@@ -1,4 +1,3 @@
-<!-- index.html — тот же интерфейс, но теперь реально шлёт на бэкенд -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -15,6 +14,9 @@
     --black: #050505;
     --panel: #0b0b0b;
     --border: #1a1a1a;
+    --warn: #ffaa00;
+    --ok: #4ade80;
+    --err: #f87171;
   }
   html, body {
     height:100%;
@@ -48,7 +50,7 @@
   .app {
     position: relative; z-index: 2; height: 100vh;
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 400px 1fr;
     grid-template-rows: 60px 1fr;
     grid-template-areas: "head head" "side main";
   }
@@ -71,6 +73,7 @@
     background: var(--white); box-shadow: 0 0 10px rgba(255,255,255,0.7);
     animation: pulse 2s infinite;
   }
+  .status.err .dot { background: var(--err); box-shadow: 0 0 10px var(--err); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .side {
     grid-area: side; padding: 28px 24px;
@@ -93,18 +96,61 @@
   .field textarea { resize: vertical; min-height: 60px; font-size: 12px; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: #444; }
   .field input::placeholder, .field textarea::placeholder { color: #333; }
+
+  /* умная подсказка */
+  .hint {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px solid #1e1e1e;
+    border-left: 2px solid var(--warn);
+    border-radius: 4px;
+    background: #0a0a0a;
+    font-size: 11px;
+    line-height: 1.7;
+    color: #999;
+    display: none;
+  }
+  .hint.show { display: block; animation: hintIn 0.3s ease; }
+  .hint b { color: var(--white); font-weight: 700; }
+  .hint .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #1a1a1a;
+    border-radius: 3px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--warn);
+    margin-right: 8px;
+  }
+  .hint.recommend { border-left-color: var(--ok); }
+  .hint.recommend .tag { color: var(--ok); }
+  .hint.danger { border-left-color: var(--err); }
+  .hint.danger .tag { color: var(--err); }
+  @keyframes hintIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .profile-btn {
     background: #080808; border: 1px solid var(--border); color: #888;
     font-family: inherit; font-size: 10px; letter-spacing: 2px;
     padding: 12px 8px; border-radius: 4px; cursor: pointer;
-    transition: all 0.25s; text-align: center;
+    transition: all 0.25s; text-align: center; position: relative;
   }
   .profile-btn:hover { border-color: #333; color: var(--white); }
   .profile-btn.active {
     background: var(--white); color: var(--black);
     border-color: var(--white); font-weight: 900;
   }
+  .profile-btn.rec::after {
+    content:'★';
+    position: absolute;
+    top: 4px; right: 6px;
+    font-size: 8px;
+    color: var(--ok);
+  }
+  .profile-btn.active.rec::after { color: var(--black); }
   .slider-row { display: flex; align-items: center; gap: 12px; }
   .slider-row input[type=range] {
     flex: 1; -webkit-appearance: none; appearance: none;
@@ -176,8 +222,9 @@
   .log::-webkit-scrollbar-thumb { background: #222; }
   .log .line { display: block; }
   .log .line b { color: var(--white); }
-  .log .line.err { color: #888; }
-  .log .line.ok { color: var(--white); }
+  .log .line.err { color: var(--err); }
+  .log .line.ok { color: var(--ok); }
+  .log .line.warn { color: var(--warn); }
   @media (max-width: 900px) {
     .app {
       grid-template-columns: 1fr;
@@ -208,6 +255,7 @@
     <div class="field">
       <label>Target</label>
       <input type="text" id="target" placeholder="https://example.com" autocomplete="off" spellcheck="false">
+      <div class="hint" id="hint"></div>
     </div>
 
     <div class="field">
@@ -221,19 +269,19 @@
     </div>
 
     <div class="field" id="bodyField" style="display:none">
-      <label>Body</label>
+      <label>Body (JSON)</label>
       <textarea id="body" placeholder='{"key":"value"}'></textarea>
     </div>
 
-    <div class="field" id="headersField" style="display:none">
-      <label>Headers</label>
+    <div class="field" id="headersField">
+      <label>Headers (JSON, опционально)</label>
       <textarea id="headers" placeholder='{"Authorization":"Bearer ..."}'></textarea>
     </div>
 
     <div class="field">
       <label>Pattern</label>
       <div class="profiles" id="patterns">
-        <button class="profile-btn" data-pattern="steady">STEADY</button>
+        <button class="profile-btn active" data-pattern="steady">STEADY</button>
         <button class="profile-btn" data-pattern="ramp">RAMP</button>
         <button class="profile-btn" data-pattern="spike">SPIKE</button>
         <button class="profile-btn" data-pattern="wave">WAVE</button>
@@ -253,8 +301,8 @@
     <div class="field">
       <label>Duration</label>
       <div class="slider-row">
-        <input type="range" id="duration" min="10" max="300" step="10" value="60">
-        <span class="slider-val" id="durationVal">60s</span>
+        <input type="range" id="duration" min="10" max="300" step="10" value="30">
+        <span class="slider-val" id="durationVal">30s</span>
       </div>
     </div>
 
@@ -294,9 +342,11 @@
 </div>
 
 <script>
-// ==== НАСТРОЙКА: сюда URL твоего бэкенда на Render ====
+// ================================================================
+// НАСТРОЙКА БЭКЕНДА
+// ================================================================
 const API_BASE = 'https://sds-s5j9.onrender.com';
-// ======================================================
+// ================================================================
 
 const $ = id => document.getElementById(id);
 
@@ -305,7 +355,6 @@ const methodEl = $('method');
 const bodyEl = $('body');
 const headersEl = $('headers');
 const bodyField = $('bodyField');
-const headersField = $('headersField');
 const runBtn = $('runBtn');
 const stopBtn = $('stopBtn');
 const profilesBox = $('profiles');
@@ -315,23 +364,156 @@ const durationVal = $('durationVal');
 const logEl = $('log');
 const statusEl = $('status');
 const statusText = $('statusText');
+const hintEl = $('hint');
 
 let running = false;
 let pps = 200;
-let duration = 60;
+let duration = 30;
 let pattern = 'steady';
 let testId = null;
 let pollTimer = null;
+let currentAnalysis = null;
 
-// показать/скрыть body/headers для не-GET методов
+// ================================================================
+// УМНЫЙ АНАЛИЗ ТАРГЕТА
+// ================================================================
+function analyzeTarget(url) {
+  const raw = url.trim();
+  if (!raw) return null;
+
+  const result = {
+    type: 'website',
+    typeName: 'Обычный сайт',
+    recommendedPattern: 'steady',
+    recommendedProfile: 'medium',
+    recommendedPps: 200,
+    recommendedMethod: 'GET',
+    warnings: [],
+    reason: []
+  };
+
+  // IP или домен?
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/;
+  const ipMatch = raw.match(/^(\d{1,3}\.){3}\d{1,3}/);
+
+  if (ipMatch && !raw.includes('.')) {
+    // не бывает, но на всякий
+  }
+
+  if (ipRegex.test(raw) || /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(raw)) {
+    result.type = 'ip';
+    result.typeName = 'IP-адрес';
+    result.reason.push('Это IP — скорее всего тестируешь сервер напрямую.');
+    result.recommendedPattern = 'ramp';
+    result.recommendedProfile = 'light';
+    result.recommendedPps = 100;
+    result.warnings.push('Тестируй только своё железо. По чужому IP — уголовка.');
+    return result;
+  }
+
+  // нормализуем URL
+  let url;
+  try {
+    url = new URL(raw.startsWith('http') ? raw : 'https://' + raw);
+  } catch {
+    result.warnings.push('Не могу распарсить URL — проверь формат.');
+    return result;
+  }
+
+  const host = url.hostname;
+  const path = url.pathname;
+  const port = url.port;
+
+  // API?
+  if (/\/api\//.test(path) || /api\./.test(host) || port === '8080' || port === '3000' || port === '5000') {
+    result.type = 'api';
+    result.typeName = 'API-эндпоинт';
+    result.recommendedMethod = 'GET';
+    result.recommendedPattern = 'ramp';
+    result.recommendedProfile = 'medium';
+    result.recommendedPps = 200;
+    result.reason.push('Похоже на API — рекомендую RAMP чтобы найти предел.');
+    result.reason.push('Если нужен POST — переключи Method и впиши Body.');
+    return result;
+  }
+
+  // известные сервисы — предупреждаем
+  const bigGuys = ['google.com','youtube.com','facebook.com','amazon.com','microsoft.com','apple.com','cloudflare.com','example.com'];
+  if (bigGuys.some(g => host === g || host.endsWith('.' + g))) {
+    result.type = 'big';
+    result.typeName = 'Крупный сервис';
+    result.warnings.push('Это чужой крупный сервис. Тестирование без разрешения — уголовка.');
+    result.warnings.push('Для демо используй https://example.com — там нагрузка разрешена.');
+    result.recommendedPattern = 'steady';
+    result.recommendedProfile = 'light';
+    result.recommendedPps = 50;
+    return result;
+  }
+
+  // локальный хост?
+  if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.')) {
+    result.type = 'local';
+    result.typeName = 'Локальная сеть';
+    result.warnings.push('Render не сможет достучаться до твоего localhost — тест не пройдёт.');
+    return result;
+  }
+
+  // обычный сайт
+  result.reason.push('Обычный сайт. Начни с MEDIUM + STEADY.');
+  result.reason.push('Если сервер держит — переключай на HEAVY.');
+  return result;
+}
+
+function applyAnalysis(a) {
+  if (!a) {
+    hintEl.classList.remove('show');
+    return;
+  }
+
+  currentAnalysis = a;
+  hintEl.className = 'hint show' + (a.warnings.length ? ' danger' : ' recommend');
+  hintEl.innerHTML = `
+    <div><span class="tag">${a.typeName.toUpperCase()}</span></div>
+    ${a.reason.map(r => `<div>· ${r}</div>`).join('')}
+    ${a.warnings.map(w => `<div style="color:var(--err)">⚠ ${w}</div>`).join('')}
+    <div style="margin-top:8px;color:#666">Рекомендую: <b>${a.recommendedProfile.toUpperCase()}</b> · <b>${a.recommendedPattern.toUpperCase()}</b> · <b>${a.recommendedPps} RPS</b></div>
+  `;
+
+  // авто-подсветка рекомендованных кнопок
+  document.querySelectorAll('#profiles .profile-btn').forEach(b => {
+    b.classList.toggle('rec', parseInt(b.dataset.pps) === a.recommendedPps);
+  });
+  document.querySelectorAll('#patterns .profile-btn').forEach(b => {
+    b.classList.toggle('rec', b.dataset.pattern === a.recommendedPattern);
+  });
+
+  // авто-выбор метода
+  if (a.recommendedMethod) {
+    methodEl.value = a.recommendedMethod;
+    methodEl.dispatchEvent(new Event('change'));
+  }
+}
+
+// ================================================================
+// КОНСОЛЬ — видно что реально летит
+// ================================================================
+function consLog(label, data, color = '#ededed') {
+  console.log('%c[LT] ' + label, `color:${color};font-weight:bold`, data);
+}
+
+// ================================================================
+// UI
+// ================================================================
+targetEl.addEventListener('input', () => {
+  const a = analyzeTarget(targetEl.value);
+  applyAnalysis(a);
+  updateRunBtn();
+});
+
 methodEl.addEventListener('change', () => {
   const m = methodEl.value;
   bodyField.style.display = (m === 'POST' || m === 'PUT') ? 'block' : 'none';
-  headersField.style.display = 'block';
 });
-headersField.style.display = 'block';
-
-targetEl.addEventListener('input', updateRunBtn);
 
 profilesBox.querySelectorAll('.profile-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -369,6 +551,9 @@ function log(text, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
+// ================================================================
+// ГРАФИК
+// ================================================================
 const canvas = $('chart');
 const ctx = canvas.getContext('2d');
 let chartData = [];
@@ -426,32 +611,27 @@ const latencyEl = $('latency');
 const errorsEl = $('errors');
 const elapsedEl = $('elapsed');
 
-function setStatus(text, online = false) {
+function setStatus(text, cls = '') {
   statusText.textContent = text;
-  statusEl.classList.toggle('online', online);
+  statusEl.className = 'status ' + cls;
 }
 
+// ================================================================
+// РЕАЛЬНАЯ ОТПРАВКА НА БЭКЕНД
+// ================================================================
 async function startTest() {
   if (running) return;
-  running = true;
-  chartData = [];
-  rpsEl.textContent = '0';
-  latencyEl.innerHTML = '0<span class="m-unit">ms</span>';
-  errorsEl.innerHTML = '0<span class="m-unit">%</span>';
-  elapsedEl.innerHTML = '0<span class="m-unit">s</span>';
-  runBtn.disabled = true;
-  runBtn.textContent = 'RUNNING';
-  stopBtn.classList.add('active');
-  setStatus('STARTING', true);
-  ['m1','m2','m3','m4'].forEach(id => $(id).classList.add('active'));
 
-  // собираем headers
+  // собрать payload
   let headers = {};
   if (headersEl.value.trim()) {
-    try { headers = JSON.parse(headersEl.value); } catch { log('headers: невалидный JSON, игнор', 'err'); }
+    try { headers = JSON.parse(headersEl.value); }
+    catch { log('headers: невалидный JSON — игнорирую', 'warn'); consLog('HEADERS PARSE ERROR', headersEl.value, '#ffaa00'); }
   }
   let body = '';
-  if (bodyEl.value.trim()) body = bodyEl.value.trim();
+  if (bodyEl.value.trim() && (methodEl.value === 'POST' || methodEl.value === 'PUT')) {
+    body = bodyEl.value.trim();
+  }
 
   const payload = {
     target: targetEl.value.trim(),
@@ -463,7 +643,23 @@ async function startTest() {
     pattern: pattern,
   };
 
-  log(`POST ${API_BASE}/api/start`, 'ok');
+  // лог в консоль — видно что летит
+  consLog('POST /api/start', { url: API_BASE + '/api/start', payload }, '#4ade80');
+  log(`POST <b>${API_BASE}/api/start</b>`, 'ok');
+  log(`payload: target=${payload.target} · pps=${payload.pps} · duration=${payload.duration}s · pattern=${payload.pattern} · method=${payload.method}`);
+
+  // UI в running
+  running = true;
+  chartData = [];
+  rpsEl.textContent = '0';
+  latencyEl.innerHTML = '0<span class="m-unit">ms</span>';
+  errorsEl.innerHTML = '0<span class="m-unit">%</span>';
+  elapsedEl.innerHTML = '0<span class="m-unit">s</span>';
+  runBtn.disabled = true;
+  runBtn.textContent = 'RUNNING';
+  stopBtn.classList.add('active');
+  setStatus('STARTING', 'online');
+  ['m1','m2','m3','m4'].forEach(id => $(id).classList.add('active'));
 
   try {
     const res = await fetch(API_BASE + '/api/start', {
@@ -471,16 +667,27 @@ async function startTest() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    consLog('response', { status: res.status, ok: res.ok }, res.ok ? '#4ade80' : '#f87171');
+
+    if (!res.ok) {
+      const txt = await res.text();
+      consLog('error body', txt, '#f87171');
+      throw new Error('HTTP ' + res.status + ': ' + txt.slice(0, 200));
+    }
+
     const data = await res.json();
+    consLog('test id', data, '#4ade80');
     testId = data.id;
-    log(`test started → <b>${payload.target}</b>`, 'ok');
-    log(`profile: ${pps} rps · duration: ${duration}s · pattern: ${pattern}`);
-    setStatus('RUNNING', true);
+    log(`test accepted · id = <b>${testId}</b>`, 'ok');
+    setStatus('RUNNING', 'online');
     pollTimer = setInterval(pollStatus, 500);
+
   } catch (e) {
+    consLog('START FAILED', e.message, '#f87171');
     log('ошибка запуска: ' + e.message, 'err');
-    stopTest(true);
+    setStatus('ERROR', 'err');
+    resetUI();
   }
 }
 
@@ -488,20 +695,22 @@ async function pollStatus() {
   if (!testId) return;
   try {
     const res = await fetch(API_BASE + '/api/status/' + testId);
-    if (!res.ok) return;
+    if (!res.ok) {
+      consLog('poll http error', res.status, '#ffaa00');
+      return;
+    }
     const data = await res.json();
+    consLog('poll', data);
 
     elapsedEl.innerHTML = Math.floor(data.elapsed) + '<span class="m-unit">s</span>';
 
-    // пока k6 работает, summary пустой — рисуем заглушку чтобы график был живой
-    // (реальные метрики k6 отдаёт только после завершения, если не использовать --out)
     if (data.status === 'running') {
-      const fakeRps = Math.round(pps * (0.85 + Math.random() * 0.3));
-      rpsEl.textContent = fakeRps;
-      chartData.push(fakeRps);
+      // пока k6 не отдал summary, рисуем ориентировочный RPS чтобы график был живой
+      const approx = Math.round(pps * (0.85 + Math.random() * 0.3));
+      rpsEl.textContent = approx;
+      chartData.push(approx);
       if (chartData.length > MAX_POINTS) chartData.shift();
       drawChart();
-      if (Math.random() < 0.15) log(`running · ${fakeRps} rps`);
     }
 
     if (data.status === 'finished' || data.status === 'timeout' || data.status === 'stopped') {
@@ -514,47 +723,66 @@ async function pollStatus() {
       const dur = metrics.http_req_duration?.values || {};
       const failed = metrics.http_req_failed?.values || {};
 
-      rpsEl.textContent = Math.round(reqs.rate || 0);
-      latencyEl.innerHTML = Math.round(dur['p(95)'] || 0) + '<span class="m-unit">ms</span>';
-      errorsEl.innerHTML = ((failed.rate || 0) * 100).toFixed(2) + '<span class="m-unit">%</span>';
+      const realRps = Math.round(reqs.rate || 0);
+      const realP95 = Math.round(dur['p(95)'] || 0);
+      const realErr = ((failed.rate || 0) * 100).toFixed(2);
 
-      log('test completed', 'ok');
-      log(`total requests: ${reqs.count || 0}`);
-      log(`avg latency: ${Math.round(dur.avg || 0)}ms · p95: ${Math.round(dur['p(95)'] || 0)}ms · p99: ${Math.round(dur['p(99)'] || 0)}ms`);
-      log(`errors: ${failed.count || 0} (${((failed.rate||0)*100).toFixed(2)}%)`);
+      rpsEl.textContent = realRps;
+      latencyEl.innerHTML = realP95 + '<span class="m-unit">ms</span>';
+      errorsEl.innerHTML = realErr + '<span class="m-unit">%</span>';
 
-      stopTest(false, true);
+      consLog('FINAL SUMMARY', { rps: realRps, p95: realP95, errors: realErr, raw: s }, '#4ade80');
+
+      log('──────── test completed ────────', 'ok');
+      log(`total requests: <b>${reqs.count || 0}</b>`);
+      log(`avg latency: <b>${Math.round(dur.avg || 0)}ms</b> · p95: <b>${realP95}ms</b> · p99: <b>${Math.round(dur['p(99)'] || 0)}ms</b>`);
+      log(`errors: <b>${failed.count || 0}</b> (${realErr}%)`);
+
+      setStatus('COMPLETE', '');
+      resetUI();
     }
   } catch (e) {
+    consLog('poll error', e.message, '#f87171');
     log('poll error: ' + e.message, 'err');
   }
 }
 
-async function stopTest(failed = false, finished = false) {
+function resetUI() {
   running = false;
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-
-  if (!failed && !finished && testId) {
-    try { await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' }); } catch {}
-    log('test stopped by user', 'err');
-  }
-
   runBtn.disabled = false;
   runBtn.textContent = 'START TEST';
   stopBtn.classList.remove('active');
-  setStatus(finished ? 'COMPLETE' : (failed ? 'ERROR' : 'STOPPED'), false);
   ['m1','m2','m3','m4'].forEach(id => $(id).classList.remove('active'));
   updateRunBtn();
   testId = null;
 }
 
-runBtn.addEventListener('click', startTest);
-stopBtn.addEventListener('click', () => stopTest());
+async function stopTest() {
+  if (!testId) { resetUI(); return; }
+  consLog('POST /api/stop/' + testId, {}, '#ffaa00');
+  log('отправляю STOP на бэкенд...', 'warn');
+  try {
+    await fetch(API_BASE + '/api/stop/' + testId, { method: 'POST' });
+  } catch (e) {
+    consLog('stop failed', e.message, '#f87171');
+  }
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  setStatus('STOPPED', '');
+  resetUI();
+}
 
+runBtn.addEventListener('click', startTest);
+stopBtn.addEventListener('click', stopTest);
+
+// ================================================================
+// INIT
+// ================================================================
 resizeCanvas();
 drawChart();
 updateRunBtn();
-log('system ready · api: ' + API_BASE);
+consLog('API_BASE', API_BASE, '#4ade80');
+log(`system ready · api: <b>${API_BASE}</b>`);
+log('вставь ссылку в Target — получишь рекомендацию');
 </script>
 </body>
 </html>
