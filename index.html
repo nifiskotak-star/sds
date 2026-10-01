@@ -18,12 +18,9 @@
     --blue: #60a5fa;
   }
   html, body {
-    height:100%;
-    background: var(--black);
-    color: var(--white);
+    height:100%; background: var(--black); color: var(--white);
     font-family: 'JetBrains Mono', monospace;
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
+    overflow: hidden; -webkit-font-smoothing: antialiased;
   }
   #preloader {
     position: fixed; inset:0; background: var(--black);
@@ -128,12 +125,17 @@
     width: 100%; background: var(--white); color: var(--black);
     border: none; font-family: inherit; font-weight: 900;
     font-size: 12px; letter-spacing: 5px; padding: 15px;
-    border-radius: 4px; cursor: pointer; transition: all 0.3s; margin-bottom: 10px;
+    border-radius: 4px; cursor: pointer; transition: all 0.3s;
+    margin-bottom: 10px;
   }
   .run:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 30px rgba(255,255,255,0.25); }
   .run:disabled { background: #111; color: #333; cursor: not-allowed; }
   .run.ladder { background: #0f0f0f; color: var(--white); border: 1px solid #333; }
   .run.ladder:hover:not(:disabled) { background: #151515; border-color: #666; box-shadow: 0 0 30px rgba(255,255,255,0.1); }
+  .run.pay { background: #0f0f0f; color: #fff; border: 1px solid #444; }
+  .run.pay:hover:not(:disabled) { background: #151515; border-color: #666; }
+  .run.paid { background: var(--ok) !important; color: var(--black) !important; border-color: var(--ok) !important; }
+  .pay-status { font-size: 10px; letter-spacing: 2px; color: #666; text-align: center; padding: 6px 0 12px; min-height: 24px; }
   .stop { width: 100%; background: transparent; color: #666; border: 1px solid var(--border); font-family: inherit; font-weight: 700; font-size: 11px; letter-spacing: 4px; padding: 13px; border-radius: 4px; cursor: pointer; transition: all 0.25s; display: none; }
   .stop:hover { color: var(--white); border-color: #444; }
   .stop.active { display: block; }
@@ -178,19 +180,8 @@
   .report-cell .rc-val.good { color: var(--ok); }
   .report-cell .rc-val.warn { color: var(--warn); }
   .report-cell .rc-val.bad { color: var(--err); }
-
-  /* score */
-  .score-box {
-    display: flex; align-items: center; gap: 24px;
-    padding: 20px; border: 1px solid #1a1a1a; border-radius: 6px; background: #0d0d0d;
-  }
-  .score-circle {
-    width: 90px; height: 90px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px; font-weight: 900;
-    border: 3px solid;
-    flex-shrink: 0;
-  }
+  .score-box { display: flex; align-items: center; gap: 24px; padding: 20px; border: 1px solid #1a1a1a; border-radius: 6px; background: #0d0d0d; }
+  .score-circle { width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; border: 3px solid; flex-shrink: 0; }
   .score-circle.good { color: var(--ok); border-color: var(--ok); }
   .score-circle.warn { color: var(--warn); border-color: var(--warn); }
   .score-circle.bad { color: var(--err); border-color: var(--err); }
@@ -202,17 +193,8 @@
   .score-bar .sb-fill.warn { background: var(--warn); }
   .score-bar .sb-fill.bad { background: var(--err); }
   .score-bar .sb-fill.good { background: var(--ok); }
-
-  /* waterfall */
-  .waterfall {
-    border: 1px solid #1a1a1a; border-radius: 4px; background: #0d0d0d;
-    padding: 14px; font-size: 11px;
-  }
-  .wf-row {
-    display: grid; grid-template-columns: 130px 1fr 80px;
-    align-items: center; gap: 12px; padding: 6px 0;
-    border-bottom: 1px solid #141414;
-  }
+  .waterfall { border: 1px solid #1a1a1a; border-radius: 4px; background: #0d0d0d; padding: 14px; font-size: 11px; }
+  .wf-row { display: grid; grid-template-columns: 130px 1fr 80px; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #141414; }
   .wf-row:last-child { border-bottom: none; }
   .wf-label { color: #888; letter-spacing: 1px; }
   .wf-bar-wrap { background: #111; height: 4px; border-radius: 2px; overflow: hidden; }
@@ -220,15 +202,12 @@
   .wf-bar.warn { background: var(--warn); }
   .wf-bar.bad { background: var(--err); }
   .wf-val { text-align: right; color: var(--white); font-weight: 700; font-size: 11px; }
-
-  /* benchmark */
   .bench { font-size: 11px; line-height: 1.9; color: #999; }
   .bench-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #141414; }
   .bench-row:last-child { border-bottom: none; }
   .bench-row .bv { color: var(--white); font-weight: 700; }
   .bench-row .bv.good { color: var(--ok); }
   .bench-row .bv.bad { color: var(--err); }
-
   .rec-box { border: 1px solid #1a1a1a; border-left: 2px solid var(--warn); border-radius: 4px; padding: 14px; background: #0d0d0d; font-size: 12px; line-height: 1.8; color: #b0b0b0; }
   .rec-box.good { border-left-color: var(--ok); }
   .rec-box.bad { border-left-color: var(--err); }
@@ -243,16 +222,8 @@
   .head-right { display: flex; align-items: center; gap: 14px; }
   .head-btn { background: transparent; border: 1px solid #1a1a1a; color: #888; font-family: inherit; font-size: 10px; letter-spacing: 2px; padding: 8px 14px; border-radius: 4px; cursor: pointer; transition: all 0.25s; }
   .head-btn:hover { color: var(--white); border-color: #444; }
-
-  /* ladder stage indicator */
-  .ladder-indicator {
-    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-    font-size: 10px; letter-spacing: 3px; color: var(--warn);
-    background: #0d0d0d; border: 1px solid #2a2a2a; padding: 5px 12px;
-    border-radius: 3px; z-index: 3; display: none;
-  }
+  .ladder-indicator { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 3px; color: var(--warn); background: #0d0d0d; border: 1px solid #2a2a2a; padding: 5px 12px; border-radius: 3px; z-index: 3; display: none; }
   .ladder-indicator.show { display: block; }
-
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; grid-template-areas: "head" "side" "main"; height: auto; min-height: 100vh; }
     .side { border-right: none; border-bottom: 1px solid var(--border); }
@@ -369,6 +340,9 @@
       </div>
     </div>
 
+    <button class="run pay" id="payBtn">ОПЛАТИТЬ 5 USDT</button>
+    <div class="pay-status" id="payStatus"></div>
+
     <button class="run" id="runBtn" disabled>START TEST</button>
     <button class="run ladder" id="ladderBtn" disabled>НАЙТИ ПРЕДЕЛ</button>
     <button class="stop" id="stopBtn">STOP</button>
@@ -430,6 +404,8 @@ const tgEl = $('tg');
 const runBtn = $('runBtn');
 const ladderBtn = $('ladderBtn');
 const stopBtn = $('stopBtn');
+const payBtn = $('payBtn');
+const payStatus = $('payStatus');
 const profilesBox = $('profiles');
 const patternsBox = $('patterns');
 const durationEl = $('duration');
@@ -456,6 +432,10 @@ let streamTimer = null;
 let lastReport = null;
 let isLadder = false;
 
+let currentInvoiceId = null;
+let invoicePaid = false;
+let paymentPollTimer = null;
+
 // ============ PRELOADER ============
 const preLogLines = [
   'initializing core...',
@@ -472,7 +452,6 @@ const preTimer = setInterval(() => {
     setTimeout(() => {
       $('preloader').classList.add('hide');
       $('app').classList.add('show');
-      consLog('APP READY', { api: API_BASE }, '#4ade80');
       log(`system ready · api: <b>${API_BASE}</b>`);
     }, 400);
     return;
@@ -483,19 +462,66 @@ const preTimer = setInterval(() => {
   preIdx++;
 }, 450);
 
+// ============ ОПЛАТА ============
+payBtn.addEventListener('click', async () => {
+  if (invoicePaid) return;
+  payBtn.disabled = true;
+  payBtn.textContent = 'СОЗДАЮ СЧЁТ...';
+  payStatus.textContent = '';
+
+  try {
+    const res = await fetch(API_BASE + '/api/invoice', { method: 'POST' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    currentInvoiceId = data.invoice_id;
+
+    payStatus.textContent = 'счёт создан · открываю оплату...';
+    window.open(data.pay_url, '_blank');
+
+    payBtn.textContent = 'ОЖИДАЮ ОПЛАТУ...';
+    payStatus.innerHTML = 'оплати 5 USDT в открывшемся окне';
+
+    let seconds = 0;
+    paymentPollTimer = setInterval(async () => {
+      seconds += 3;
+      if (seconds > 600) {
+        clearInterval(paymentPollTimer);
+        payBtn.disabled = false;
+        payBtn.textContent = 'ОПЛАТИТЬ 5 USDT';
+        payStatus.textContent = 'счёт истёк, попробуй снова';
+        return;
+      }
+      try {
+        const r = await fetch(API_BASE + '/api/invoice/check/' + currentInvoiceId);
+        const d = await r.json();
+        if (d.paid) {
+          clearInterval(paymentPollTimer);
+          invoicePaid = true;
+          payBtn.textContent = '✓ ОПЛАЧЕНО';
+          payBtn.classList.add('paid');
+          payStatus.innerHTML = '<span style="color:#4ade80">доступ открыт · можно запускать тест</span>';
+          log('оплата получена · доступ открыт', 'ok');
+          updateRunBtn();
+        }
+      } catch (e) {}
+    }, 3000);
+
+  } catch (e) {
+    payBtn.disabled = false;
+    payBtn.textContent = 'ОПЛАТИТЬ 5 USDT';
+    payStatus.innerHTML = '<span style="color:#f87171">ошибка: ' + e.message + '</span>';
+  }
+});
+
 // ============ АНАЛИЗ ============
 function analyzeTarget(url) {
   const raw = url.trim();
   if (!raw) return null;
-  const result = {
-    type: 'website', typeName: 'Обычный сайт',
-    recommendedPattern: 'steady', recommendedProfile: 'medium', recommendedPps: 200,
-    warnings: [], reason: []
-  };
+  const result = { type:'website', typeName:'Обычный сайт', recommendedPattern:'steady', recommendedProfile:'medium', recommendedPps:200, warnings:[], reason:[] };
   if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(raw)) {
-    result.type = 'ip'; result.typeName = 'IP-адрес';
-    result.recommendedPattern = 'ramp'; result.recommendedProfile = 'light'; result.recommendedPps = 100;
-    result.reason.push('Прямое обращение к IP — тестируем сервер.');
+    result.type='ip'; result.typeName='IP-адрес';
+    result.recommendedPattern='ramp'; result.recommendedProfile='light'; result.recommendedPps=100;
+    result.reason.push('Прямое обращение к IP.');
     result.warnings.push('Тестируй только своё железо.');
     return result;
   }
@@ -504,26 +530,26 @@ function analyzeTarget(url) {
   catch { result.warnings.push('Не могу распарсить URL.'); return result; }
   const host = u.hostname, path = u.pathname, port = u.port;
   if (/\/api\//i.test(path) || /^api\./i.test(host) || port === '8080' || port === '3000' || port === '5000') {
-    result.type = 'api'; result.typeName = 'API';
-    result.recommendedPattern = 'ramp';
+    result.type='api'; result.typeName='API';
+    result.recommendedPattern='ramp';
     result.reason.push('Похоже на API — RAMP найдёт предел.');
     return result;
   }
   const big = ['google.com','youtube.com','facebook.com','amazon.com','microsoft.com','apple.com','cloudflare.com','twitter.com','instagram.com','tiktok.com','github.com'];
   if (big.some(g => host === g || host.endsWith('.' + g))) {
-    result.type = 'big'; result.typeName = 'Крупный сервис';
+    result.type='big'; result.typeName='Крупный сервис';
     result.warnings.push('Это чужой крупный сервис. Тестирование без разрешения — уголовка.');
     result.warnings.push('Для демо используй example.com');
-    result.recommendedProfile = 'light'; result.recommendedPps = 50;
+    result.recommendedProfile='light'; result.recommendedPps=50;
     return result;
   }
   if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
-    result.type = 'local'; result.typeName = 'Локальная сеть';
+    result.type='local'; result.typeName='Локальная сеть';
     result.warnings.push('Render не достучится до localhost.');
     return result;
   }
   if (host === 'example.com' || host.endsWith('.example.com')) {
-    result.typeName = 'Тестовый домен';
+    result.typeName='Тестовый домен';
     result.reason.push('example.com — официальный тестовый домен.');
     return result;
   }
@@ -597,8 +623,8 @@ strictToggle.addEventListener('click', () => {
 
 function updateRunBtn() {
   const has = targetEl.value.trim() && !running;
-  runBtn.disabled = !has;
-  ladderBtn.disabled = !has;
+  runBtn.disabled = !(has && invoicePaid);
+  ladderBtn.disabled = !(has && invoicePaid);
 }
 
 function log(text, cls = '') {
@@ -612,7 +638,7 @@ function log(text, cls = '') {
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-// ============ ГРАФИК (RPS + P95) ============
+// ============ ГРАФИК ============
 const canvas = $('chart');
 const ctx = canvas.getContext('2d');
 let chartRps = [];
@@ -639,12 +665,10 @@ function drawChart() {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
   }
   if (chartRps.length < 2) return;
-
   const maxRps = Math.max(...chartRps, 1);
   const maxP95 = Math.max(...chartP95, 1);
   const step = w / (MAX_POINTS - 1);
 
-  // RPS — белая заливка + линия
   ctx.beginPath();
   ctx.moveTo(0, h);
   chartRps.forEach((v, i) => {
@@ -670,7 +694,6 @@ function drawChart() {
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // P95 — синяя линия
   if (chartP95.length > 1) {
     ctx.beginPath();
     chartP95.forEach((v, i) => {
@@ -702,40 +725,26 @@ async function pollStream() {
     if (!res.ok) return;
     const data = await res.json();
     if (!data.lines || !data.lines.length) return;
-
-    // считаем новые http_reqs + duration в окне
     let reqCount = 0;
-    let p95sum = 0;
-    let p95count = 0;
-
+    let p95sum = 0, p95count = 0;
     for (const line of data.lines) {
       if (line.type !== 'Point') continue;
-      if (line.metric === 'http_reqs') {
-        reqCount++;
-      } else if (line.metric === 'http_req_duration') {
-        p95sum += line.data?.value || 0;
-        p95count++;
-      }
+      if (line.metric === 'http_reqs') reqCount++;
+      else if (line.metric === 'http_req_duration') { p95sum += line.data?.value || 0; p95count++; }
     }
-
-    // грубо: кол-во req за период / длительность окна
     if (reqCount > 0) {
       const approxRps = Math.round(reqCount * 2);
       chartRps.push(approxRps);
       if (chartRps.length > MAX_POINTS) chartRps.shift();
       rpsEl.textContent = approxRps;
     }
-
     if (p95count > 0) {
       const avg = p95sum / p95count;
       chartP95.push(avg);
       if (chartP95.length > MAX_POINTS) chartP95.shift();
     }
-
     drawChart();
-  } catch (e) {
-    // тихо, чтобы не спамить
-  }
+  } catch (e) {}
 }
 
 // ============ СТАРТ ============
@@ -764,19 +773,18 @@ async function startTest(ladder = false) {
     user_agent: uaEl.value.trim() || null,
     cookie: cookieEl.value.trim() || null,
     strict: strict,
-    tg_chat_id: tgEl.value.trim() || null
+    tg_chat_id: tgEl.value.trim() || null,
+    invoice_id: currentInvoiceId || null
   };
 
   if (ladder) {
-    // лестница: [50, 200, 500, 1200]
     payload.steps = [50, 200, 500, 1200];
-    payload.duration = Math.max(60, duration); // минимум 60 для лестницы
+    payload.duration = Math.max(60, duration);
   }
 
-  consLog(ladder ? 'POST /api/start (LADDER)' : 'POST /api/start', payload, '#4ade80');
   log(`${ladder ? 'ЛЕСТНИЦА' : 'ТЕСТ'} → <b>${payload.target}</b>`, 'ok');
   if (ladder) {
-    log(`ступени: 50 → 200 → 500 → 1200 RPS · по ${Math.floor(payload.duration / 4)}с`, 'warn');
+    log(`ступени: 50 → 200 → 500 → 1200 RPS`, 'warn');
     ladderIndicator.classList.add('show');
     ladderStageEl.textContent = 'LIGHT';
   }
@@ -802,7 +810,10 @@ async function startTest(ladder = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error('HTTP ' + res.status + ': ' + txt);
+    }
     const data = await res.json();
     testId = data.id;
     log(`test accepted · id = <b>${testId}</b>`, 'ok');
@@ -810,7 +821,6 @@ async function startTest(ladder = false) {
     pollTimer = setInterval(pollStatus, 500);
     streamTimer = setInterval(pollStream, 1000);
   } catch (e) {
-    consLog('START FAILED', e.message, '#f87171');
     log('ошибка: ' + e.message, 'err');
     setStatus('ERROR', 'err');
     resetUI();
@@ -825,7 +835,6 @@ async function pollStatus() {
     const data = await res.json();
     elapsedEl.innerHTML = Math.floor(data.elapsed) + '<span class="m-unit">s</span>';
 
-    // для лестницы показываем текущую ступень
     if (isLadder && data.status === 'running') {
       const prog = data.elapsed / (duration || 1);
       let stage = 'LIGHT';
@@ -838,10 +847,9 @@ async function pollStatus() {
     if (['finished','timeout','stopped','error'].includes(data.status)) {
       clearInterval(pollTimer); pollTimer = null;
       clearInterval(streamTimer); streamTimer = null;
-      consLog('FINAL', data.summary, '#4ade80');
       finishTest(data);
     }
-  } catch (e) { consLog('poll error', e.message, '#f87171'); }
+  } catch (e) {}
 }
 
 async function stopTest() {
@@ -862,6 +870,16 @@ function resetUI() {
   stopBtn.classList.remove('active');
   ladderIndicator.classList.remove('show');
   ['m1','m2','m3','m4'].forEach(id => $(id).classList.remove('active'));
+
+  // сброс оплаты
+  if (invoicePaid) {
+    invoicePaid = false;
+    currentInvoiceId = null;
+    payBtn.classList.remove('paid');
+    payBtn.disabled = false;
+    payBtn.textContent = 'ОПЛАТИТЬ 5 USDT';
+    payStatus.textContent = '';
+  }
   updateRunBtn();
   testId = null;
 }
@@ -873,8 +891,6 @@ function finishTest(data) {
   const reqs = m.http_reqs || {};
   const dur = m.http_req_duration || {};
   const failed = m.http_req_failed || {};
-
-  // waterfall метрики
   const blocked = m.http_req_blocked || {};
   const connecting = m.http_req_connecting || {};
   const tls = m.http_req_tls_handshaking || {};
@@ -898,26 +914,13 @@ function finishTest(data) {
   latencyEl.innerHTML = p95 + '<span class="m-unit">ms</span>';
   errorsEl.innerHTML = errRate + '<span class="m-unit">%</span>';
 
-  log('──────── test completed ────────', 'ok');
-  log(`RPS: <b>${realRps}</b> · всего: <b>${total}</b>`);
-  log(`P50: <b>${p50}ms</b> · P95: <b>${p95}ms</b> · P99: <b>${p99}ms</b>`);
-
   const report = {
-    id: testId,
-    date: new Date().toISOString(),
+    id: testId, date: new Date().toISOString(),
     target: data.target || targetEl.value.trim(),
-    method: methodEl.value,
-    pps: pps,
-    duration: duration,
-    pattern: isLadder ? 'ladder' : pattern,
-    timeout: timeout,
-    strict: strict,
-    isLadder,
-    rps: realRps,
-    total, p50, p95, p99, avg, min, max,
-    errors: errCount,
-    errorRate: parseFloat(errRate),
-    okCount,
+    method: methodEl.value, pps, duration, pattern: isLadder ? 'ladder' : pattern,
+    timeout, strict, isLadder,
+    rps: realRps, total, p50, p95, p99, avg, min, max,
+    errors: errCount, errorRate: parseFloat(errRate), okCount,
     waterfall: {
       blocked: Math.round(blocked.avg || 0),
       connecting: Math.round(connecting.avg || 0),
@@ -938,45 +941,42 @@ function finishTest(data) {
   resetUI();
 }
 
-// ============ ОЦЕНКА В БАЛЛАХ ============
+// ============ ОЦЕНКА ============
 function calcScore(r) {
   let speed = 100, stability = 100, errors = 100;
-
-  // скорость: P95 <200ms = 100, >3000ms = 0
-  if (r.p95 > 0) {
-    speed = Math.max(0, Math.min(100, 100 - ((r.p95 - 200) / 2800) * 100));
-  }
-
-  // стабильность: max/p95 ratio. 1 = 100, >5 = 0
+  if (r.p95 > 0) speed = Math.max(0, Math.min(100, 100 - ((r.p95 - 200) / 2800) * 100));
   if (r.p95 > 0 && r.max > 0) {
     const ratio = r.max / r.p95;
     stability = Math.max(0, Math.min(100, 100 - ((ratio - 1) / 4) * 100));
   }
-
-  // ошибки: 0% = 100, 10%+ = 0
   errors = Math.max(0, Math.min(100, 100 - r.errorRate * 10));
-
-  // достигнуто от заданного RPS
   if (r.pps > 0) {
     const ratio = r.rps / r.pps;
     const achieved = Math.max(0, Math.min(100, ratio * 100));
-    // снижаем общую если не дотянул
     speed = speed * 0.6 + achieved * 0.4;
   }
-
   const total = Math.round((speed + stability + errors) / 3);
   let mood = 'good';
-  if (total < 40) mood = 'bad';
-  else if (total < 70) mood = 'warn';
-
+  if (total < 40) mood = 'bad'; else if (total < 70) mood = 'warn';
   return { total, speed: Math.round(speed), stability: Math.round(stability), errors: Math.round(errors), mood };
 }
 
-// ============ РЕКОМЕНДАЦИИ ============
+function dominantStage(w) {
+  if (!w) return '—';
+  const stages = [
+    { name:'DNS/blocked', v:w.blocked },
+    { name:'TCP connect', v:w.connecting },
+    { name:'TLS handshake', v:w.tls },
+    { name:'ожидание сервера', v:w.waiting },
+    { name:'получение данных', v:w.receiving }
+  ];
+  stages.sort((a, b) => b.v - a.v);
+  return stages[0].name + ' (' + stages[0].v + 'ms)';
+}
+
 function makeRecommendations(r) {
   const recs = [];
   let mood = 'good';
-
   if (r.errorRate > 5) { recs.push(`Сервер сыпет ошибками (${r.errorRate}%).`); mood = 'bad'; }
   else if (r.errorRate > 1) { recs.push(`Ошибки ${r.errorRate}% — близко к пределу.`); mood = 'warn'; }
   else { recs.push(`Ошибок почти нет (${r.errorRate}%).`); }
@@ -987,80 +987,55 @@ function makeRecommendations(r) {
 
   if (r.rps > 0 && r.pps > 0) {
     const ratio = Math.round(r.rps / r.pps * 100);
-    if (ratio < 50) { recs.push(`Достигнуто только ${ratio}% от заданной нагрузки (${r.rps} из ${r.pps} RPS). Сервер упёрся в предел.`); mood = 'bad'; }
+    if (ratio < 50) { recs.push(`Достигнуто только ${ratio}% от заданной нагрузки (${r.rps} из ${r.pps} RPS).`); mood = 'bad'; }
     else if (ratio < 90) { recs.push(`Достигнуто ${ratio}% нагрузки. Сервер близок к пределу.`); if (mood !== 'bad') mood = 'warn'; }
     else { recs.push(`Достигнуто ${ratio}% нагрузки — сервер справился.`); }
   }
 
-  // восстановление
   if (r.recovery) {
     if (r.recovery.first_ok_after_sec !== null && r.recovery.first_ok_after_sec > 5) {
-      recs.push(`Сервер восстанавливался ${r.recovery.first_ok_after_sec}с после снятия нагрузки. Это много — рекомендация: healthcheck + автоскейлинг.`);
+      recs.push(`Сервер восстанавливался ${r.recovery.first_ok_after_sec}с после снятия нагрузки.`);
       if (mood !== 'bad') mood = 'warn';
     } else if (r.recovery.available_percent < 90) {
-      recs.push(`После теста сервер был доступен только ${r.recovery.available_percent}% времени.`);
+      recs.push(`После теста доступность ${r.recovery.available_percent}%.`);
       mood = 'bad';
     } else {
-      recs.push(`Сервер восстановился за ${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : 'мгновенно'}, доступность ${r.recovery.available_percent}%.`);
+      recs.push(`Сервер восстановился, доступность ${r.recovery.available_percent}%.`);
     }
   }
 
-  if (mood === 'good') recs.push('Вывод: сервер стабилен. Можно поднять нагрузку для проверки запаса.');
-  else if (mood === 'warn') recs.push('Вывод: сервер на грани. Рекомендую оптимизировать.');
-  else recs.push('Вывод: сервер не справляется. Нужна оптимизация: кэш, индексы БД, CDN, скейлинг.');
+  if (mood === 'good') recs.push('Вывод: сервер стабилен.');
+  else if (mood === 'warn') recs.push('Вывод: сервер на грани.');
+  else recs.push('Вывод: сервер не справляется.');
 
   return { mood, recs };
 }
 
-function dominantStage(w) {
-  if (!w) return '—';
-  const stages = [
-    { name: 'DNS/blocked', v: w.blocked },
-    { name: 'TCP connect', v: w.connecting },
-    { name: 'TLS handshake', v: w.tls },
-    { name: 'ожидание сервера', v: w.waiting },
-    { name: 'получение данных', v: w.receiving }
-  ];
-  stages.sort((a, b) => b.v - a.v);
-  return stages[0].name + ' (' + stages[0].v + 'ms)';
-}
-
-// ============ МОДАЛКА ОТЧЁТА ============
+// ============ МОДАЛКА ============
 function showReport(r) {
   const rec = makeRecommendations(r);
   const cls = rec.mood === 'good' ? 'good' : (rec.mood === 'bad' ? 'bad' : '');
   const score = calcScore(r);
-
-  // benchmark
-  const benchP95 = 500, benchP99 = 1000, benchErr = 1;
-  const benchRow = (label, val, target, unit, lower_is_better = true) => {
-    const ok = lower_is_better ? val <= target : val >= target;
-    return `<div class="bench-row"><span>${label}</span><span class="bv ${ok ? 'good' : 'bad'}">${val}${unit} <span style="color:#666;font-weight:400">(цель ${lower_is_better ? '<' : '>'} ${target}${unit})</span></span></div>`;
+  const benchRow = (label, val, target, unit) => {
+    const ok = val <= target;
+    return `<div class="bench-row"><span>${label}</span><span class="bv ${ok ? 'good' : 'bad'}">${val}${unit} <span style="color:#666;font-weight:400">(цель < ${target}${unit})</span></span></div>`;
   };
-
   const waterfallTotal = r.waterfall.total || 1;
   const wfRow = (label, val) => {
     const pct = Math.min(100, (val / waterfallTotal) * 100);
     const cls = pct > 50 ? 'bad' : pct > 25 ? 'warn' : '';
-    return `<div class="wf-row">
-      <div class="wf-label">${label}</div>
-      <div class="wf-bar-wrap"><div class="wf-bar ${cls}" style="width:${pct}%"></div></div>
-      <div class="wf-val">${val}ms</div>
-    </div>`;
+    return `<div class="wf-row"><div class="wf-label">${label}</div><div class="wf-bar-wrap"><div class="wf-bar ${cls}" style="width:${pct}%"></div></div><div class="wf-val">${val}ms</div></div>`;
   };
-
   const recoveryHtml = r.recovery ? `
     <div class="report-section">
-      <h3>Восстановление после теста</h3>
+      <h3>Восстановление</h3>
       <div class="errors-list">
-        <div class="e-row"><span>Доступность после теста</span><span class="e-count">${r.recovery.available_percent}%</span></div>
-        <div class="e-row"><span>Первый успешный ответ</span><span class="e-count">${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : '—'}</span></div>
-        <div class="e-row"><span>Проверок всего</span><span class="e-count">${r.recovery.checks}</span></div>
+        <div class="e-row"><span>Доступность</span><span class="e-count">${r.recovery.available_percent}%</span></div>
+        <div class="e-row"><span>Первый OK</span><span class="e-count">${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : '—'}</span></div>
       </div>
-    </div>
-  ` : '';
+    </div>` : '';
 
-  const html = `
+  $('reportBody').innerHTML = `
     <div class="report-head">
       <h2>ОТЧЁТ${r.isLadder ? ' — ЛЕСТНИЦА' : ''}</h2>
       <button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button>
@@ -1070,7 +1045,7 @@ function showReport(r) {
       <h3>Цель</h3>
       <div class="report-cell">
         <div class="rc-val" style="font-size:14px;word-break:break-all">${r.target}</div>
-        <div class="rc-label" style="margin-top:8px">${r.method} · ${r.pattern.toUpperCase()} · ${r.pps} RPS · ${r.duration}s${r.strict ? ' · СТРОГИЙ' : ''}</div>
+        <div class="rc-label" style="margin-top:8px">${r.method} · ${r.pattern.toUpperCase()} · ${r.pps} RPS · ${r.duration}s</div>
       </div>
     </div>
 
@@ -1079,18 +1054,9 @@ function showReport(r) {
       <div class="score-box">
         <div class="score-circle ${score.mood}">${score.total}</div>
         <div class="score-bars">
-          <div class="score-bar">
-            <div class="sb-label"><span>СКОРОСТЬ</span><span>${score.speed}</span></div>
-            <div class="sb-track"><div class="sb-fill ${score.speed < 40 ? 'bad' : score.speed < 70 ? 'warn' : 'good'}" style="width:${score.speed}%"></div></div>
-          </div>
-          <div class="score-bar">
-            <div class="sb-label"><span>СТАБИЛЬНОСТЬ</span><span>${score.stability}</span></div>
-            <div class="sb-track"><div class="sb-fill ${score.stability < 40 ? 'bad' : score.stability < 70 ? 'warn' : 'good'}" style="width:${score.stability}%"></div></div>
-          </div>
-          <div class="score-bar">
-            <div class="sb-label"><span>ОШИБКИ</span><span>${score.errors}</span></div>
-            <div class="sb-track"><div class="sb-fill ${score.errors < 40 ? 'bad' : score.errors < 70 ? 'warn' : 'good'}" style="width:${score.errors}%"></div></div>
-          </div>
+          <div class="score-bar"><div class="sb-label"><span>СКОРОСТЬ</span><span>${score.speed}</span></div><div class="sb-track"><div class="sb-fill ${score.speed < 40 ? 'bad' : score.speed < 70 ? 'warn' : 'good'}" style="width:${score.speed}%"></div></div></div>
+          <div class="score-bar"><div class="sb-label"><span>СТАБИЛЬНОСТЬ</span><span>${score.stability}</span></div><div class="sb-track"><div class="sb-fill ${score.stability < 40 ? 'bad' : score.stability < 70 ? 'warn' : 'good'}" style="width:${score.stability}%"></div></div></div>
+          <div class="score-bar"><div class="sb-label"><span>ОШИБКИ</span><span>${score.errors}</span></div><div class="sb-track"><div class="sb-fill ${score.errors < 40 ? 'bad' : score.errors < 70 ? 'warn' : 'good'}" style="width:${score.errors}%"></div></div></div>
         </div>
       </div>
     </div>
@@ -1099,7 +1065,7 @@ function showReport(r) {
       <h3>Метрики</h3>
       <div class="report-grid">
         <div class="report-cell"><div class="rc-label">RPS</div><div class="rc-val">${r.rps}</div></div>
-        <div class="report-cell"><div class="rc-label">ВСЕГО ЗАПРОСОВ</div><div class="rc-val">${r.total}</div></div>
+        <div class="report-cell"><div class="rc-label">ВСЕГО</div><div class="rc-val">${r.total}</div></div>
         <div class="report-cell"><div class="rc-label">ERROR RATE</div><div class="rc-val ${r.errorRate > 5 ? 'bad' : r.errorRate > 1 ? 'warn' : 'good'}">${r.errorRate}%</div></div>
         <div class="report-cell"><div class="rc-label">AVG</div><div class="rc-val">${r.avg}<span class="m-unit">ms</span></div></div>
         <div class="report-cell"><div class="rc-label">P50</div><div class="rc-val">${r.p50}<span class="m-unit">ms</span></div></div>
@@ -1111,25 +1077,24 @@ function showReport(r) {
     </div>
 
     <div class="report-section">
-      <h3>Waterfall — куда уходит время</h3>
+      <h3>Waterfall</h3>
       <div class="waterfall">
         ${wfRow('DNS / blocked', r.waterfall.blocked)}
         ${wfRow('TCP connect', r.waterfall.connecting)}
         ${wfRow('TLS handshake', r.waterfall.tls)}
         ${wfRow('Ожидание сервера', r.waterfall.waiting)}
         ${wfRow('Получение данных', r.waterfall.receiving)}
-        ${wfRow('Отправка запроса', r.waterfall.sending)}
+        ${wfRow('Отправка', r.waterfall.sending)}
       </div>
       <div style="margin-top:10px;font-size:11px;color:#888">Узкое место: <b style="color:var(--white)">${dominantStage(r.waterfall)}</b></div>
     </div>
 
     <div class="report-section">
-      <h3>Сравнение с benchmark</h3>
+      <h3>Benchmark</h3>
       <div class="bench">
-        ${benchRow('P95 latency', r.p95, benchP95, 'ms', true)}
-        ${benchRow('P99 latency', r.p99, benchP99, 'ms', true)}
-        ${benchRow('Error rate', r.errorRate, benchErr, '%', true)}
-        <div style="margin-top:8px;font-size:10px;color:#555">Benchmark: типичные production-сайты в индустрии</div>
+        ${benchRow('P95 latency', r.p95, 500, 'ms')}
+        ${benchRow('P99 latency', r.p99, 1000, 'ms')}
+        ${benchRow('Error rate', r.errorRate, 1, '%')}
       </div>
     </div>
 
@@ -1145,9 +1110,7 @@ function showReport(r) {
 
     <div class="report-section">
       <h3>Рекомендации</h3>
-      <div class="rec-box ${cls}">
-        ${rec.recs.map(x => `· ${x}`).join('<br>')}
-      </div>
+      <div class="rec-box ${cls}">${rec.recs.map(x => '· ' + x).join('<br>')}</div>
     </div>
 
     <div class="report-section">
@@ -1163,8 +1126,6 @@ function showReport(r) {
       <button class="report-btn" onclick="closeReport()">ЗАКРЫТЬ</button>
     </div>
   `;
-
-  $('reportBody').innerHTML = html;
   $('reportModal').classList.add('active');
 }
 
@@ -1184,7 +1145,7 @@ function buildTextReport() {
 ═══════════════════════════════════════════════
 
 Дата:        ${new Date(r.date).toLocaleString('ru-RU')}
-ID теста:    ${r.id}
+ID:          ${r.id}
 Цель:        ${r.target}
 Метод:       ${r.method}
 Паттерн:     ${r.pattern}
@@ -1199,17 +1160,16 @@ ID теста:    ${r.id}
 
 ─────────────── МЕТРИКИ ───────────────
 RPS:            ${r.rps}
-Всего запросов: ${r.total}
+Всего:          ${r.total}
 Успешных:       ${r.okCount}
-Ошибок:         ${r.errors}
-Error rate:     ${r.errorRate}%
+Ошибок:         ${r.errors} (${r.errorRate}%)
 
-Latency avg:    ${r.avg} ms
-Latency min:    ${r.min} ms
-Latency P50:    ${r.p50} ms
-Latency P95:    ${r.p95} ms
-Latency P99:    ${r.p99} ms
-Latency max:    ${r.max} ms
+avg:            ${r.avg} ms
+min:            ${r.min} ms
+P50:            ${r.p50} ms
+P95:            ${r.p95} ms
+P99:            ${r.p99} ms
+max:            ${r.max} ms
 
 ─────────────── WATERFALL ───────────────
 DNS/blocked:       ${r.waterfall.blocked} ms
@@ -1220,7 +1180,7 @@ TLS handshake:     ${r.waterfall.tls} ms
 Отправка:          ${r.waterfall.sending} ms
 Узкое место:       ${dominantStage(r.waterfall)}
 
-${r.recovery ? `─────────────── ВОССТАНОВЛЕНИЕ ───────────────
+${r.recovery ? `─────────── ВОССТАНОВЛЕНИЕ ───────────
 Доступность:       ${r.recovery.available_percent}%
 Первый OK:         ${r.recovery.first_ok_after_sec !== null ? r.recovery.first_ok_after_sec + 'с' : '—'}
 ` : ''}
@@ -1250,9 +1210,8 @@ function exportPDF() {
   if (!r) return;
   const rec = makeRecommendations(r);
   const score = calcScore(r);
-
   const html = `
-    <html><head><meta charset="utf-8"><title>Load Test Report ${r.id}</title>
+    <html><head><meta charset="utf-8"><title>Load Test ${r.id}</title>
     <style>
       body { font-family: 'Courier New', monospace; padding: 40px; color: #111; }
       h1 { font-size: 22px; letter-spacing: 4px; border-bottom: 2px solid #111; padding-bottom: 10px; }
@@ -1268,12 +1227,7 @@ function exportPDF() {
       .footer { margin-top: 40px; font-size: 11px; color: #888; text-align: center; }
     </style></head><body>
       <h1>LOAD TEST — ОТЧЁТ</h1>
-
-      <div class="score">
-        ${score.total}/100
-        <small>Скорость ${score.speed} · Стабильность ${score.stability} · Ошибки ${score.errors}</small>
-      </div>
-
+      <div class="score">${score.total}/100<small>Скорость ${score.speed} · Стабильность ${score.stability} · Ошибки ${score.errors}</small></div>
       <h2>ЦЕЛЬ</h2>
       <table>
         <tr><td>URL</td><td>${r.target}</td></tr>
@@ -1283,19 +1237,17 @@ function exportPDF() {
         <tr><td>Длительность</td><td>${r.duration}s</td></tr>
         <tr><td>Дата</td><td>${new Date(r.date).toLocaleString('ru-RU')}</td></tr>
       </table>
-
       <h2>МЕТРИКИ</h2>
       <table>
         <tr><td>RPS</td><td>${r.rps}</td></tr>
-        <tr><td>Всего запросов</td><td>${r.total}</td></tr>
+        <tr><td>Всего</td><td>${r.total}</td></tr>
         <tr><td>Успешных</td><td>${r.okCount}</td></tr>
         <tr><td>Ошибок</td><td>${r.errors} (${r.errorRate}%)</td></tr>
         <tr><td>P50</td><td>${r.p50} ms</td></tr>
         <tr><td>P95</td><td>${r.p95} ms</td></tr>
         <tr><td>P99</td><td>${r.p99} ms</td></tr>
-        <tr><td>avg / min / max</td><td>${r.avg} / ${r.min} / ${r.max} ms</td></tr>
+        <tr><td>avg/min/max</td><td>${r.avg}/${r.min}/${r.max} ms</td></tr>
       </table>
-
       <h2>WATERFALL</h2>
       <table>
         <tr><td>DNS/blocked</td><td>${r.waterfall.blocked} ms</td></tr>
@@ -1305,17 +1257,13 @@ function exportPDF() {
         <tr><td>Получение данных</td><td>${r.waterfall.receiving} ms</td></tr>
         <tr><td>Узкое место</td><td>${dominantStage(r.waterfall)}</td></tr>
       </table>
-
       <h2>ГРАФИК</h2>
       <div class="chart"><img src="${r.chartImg}"></div>
-
       <h2>РЕКОМЕНДАЦИИ</h2>
       <div class="rec">${rec.recs.map(x => '· ' + x).join('<br>')}</div>
-
       <div class="footer">Сгенерировано LOAD TESTER · ${API_BASE}</div>
     </body></html>
   `;
-
   const w = window.open('', '_blank');
   w.document.write(html);
   w.document.close();
@@ -1336,7 +1284,7 @@ function loadHistory() {
 }
 function showHistory() {
   const h = loadHistory();
-  let html = `<div class="report-head"><h2>ИСТОРИЯ ТЕСТОВ</h2><button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button></div>`;
+  let html = `<div class="report-head"><h2>ИСТОРИЯ</h2><button class="report-close" onclick="closeReport()">ЗАКРЫТЬ</button></div>`;
   if (!h.length) html += `<div class="rec-box">Пока пусто.</div>`;
   else {
     html += `<div class="errors-list">`;
