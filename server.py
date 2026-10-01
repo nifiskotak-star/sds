@@ -26,17 +26,14 @@ TESTS = {}
 PAYMENTS = {}
 
 # ============================================================
-# ТОКЕНЫ — ЗАМЕНИ ПОСЛЕ REVOKE
+# ТОКЕНЫ
 # ============================================================
-CRYPTOBOT_TOKEN = "615562:AAFfEdoOPDh7YfRHQbNIXGEIZpnHFc7B9r4"
-TG_BOT_TOKEN = "8705350376:AAHwmgyNaoFgQfWPmb0_ZftRGAALz6t-qMU"
-ADMIN_CHAT_ID = "341311229"
+CRYPTOBOT_TOKEN = os.environ.get("CRYPTOBOT_TOKEN", "615562:AAFfEdoOPDh7YfRHQbNIXGEIZpnHFc7B9r4")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8705350376:AAHwmgyNaoFgQfWPmb0_ZftRGAALz6t-qMU")
+ADMIN_CHAT_ID = os.environ.get("ADMIN_CHAT_ID", "341311229")
 PRICE_USD = 5
 # ============================================================
 
-# ============================================================
-# TELEGRAM BOT — встроен в основной процесс
-# ============================================================
 bot_last_update_id = 0
 bot_task = None
 
@@ -56,14 +53,15 @@ def tg_api(method, data=None):
         return {"ok": False}
 
 
-async def tg_send(chat_id, text):
+async def tg_send(chat_id, text, markdown=True):
     if not chat_id:
         return
     try:
         url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": chat_id, "text": text, "parse_mode": "Markdown"
-        }).encode()
+        payload = {"chat_id": chat_id, "text": text}
+        if markdown:
+            payload["parse_mode"] = "Markdown"
+        data = urllib.parse.urlencode(payload).encode()
         req = urllib.request.Request(url, data=data)
         await asyncio.get_event_loop().run_in_executor(
             None, lambda: urllib.request.urlopen(req, timeout=10)
@@ -72,42 +70,188 @@ async def tg_send(chat_id, text):
         print("TG send failed:", e)
 
 
+# ============================================================
+# ИНТЕРФЕЙС БОТА — БЕЗ ЭМОДЗИ
+# ============================================================
+
+BOT_MAIN_MENU = """`LOAD TESTER`
+
+нагрузочное тестирование сайтов
+
+команды
+
+/test url      запустить тест
+/status        статус теста
+/pricing       стоимость
+/help          помощь
+/about         о сервисе
+
+стоимость одного теста
+`5 USDT`
+
+тестируем только сайты
+с подтвержденным владением
+
+панель: https://sds-s5j9.onrender.com"""
+
+BOT_HELP = """`ПОМОЩЬ`
+
+как запустить тест
+
+1. открой панель
+   https://sds-s5j9.onrender.com
+
+2. вставь url сайта
+3. выбери нагрузку
+4. оплати 5 usdt
+5. тест запустится автоматически
+6. получишь отчёт с метриками
+
+что показывает тест
+- сколько запросов в секунду держит
+- время отклика p50 p95 p99
+- процент ошибок
+- где узкое место
+- как быстро восстанавливается
+
+ограничения
+- только свои сайты
+- не больше 1200 rps
+- максимум 5 минут на тест
+
+вопросы: @твой_контакт"""
+
+BOT_ABOUT = """`О СЕРВИСЕ`
+
+load tester — сервис нагрузочного
+тестирования сайтов.
+
+мы имитируем реальных посетителей
+и находим предел вашего сайта
+до того как его найдут клиенты.
+
+что проверяем
+- предел по нагрузке
+- скорость отклика
+- стабильность
+- ошибки
+- восстановление после нагрузки
+
+кому нужно
+- интернет магазинам перед распродажей
+- сайтам услуг перед рекламой
+- saas сервисам перед релизом
+- стартапам перед инвесторами
+
+легально
+только сайты с подтвержденным владением
+
+панель: https://sds-s5j9.onrender.com"""
+
+BOT_PRICING = """`СТОИМОСТЬ`
+
+один тест
+`5 USDT`
+
+включает
+- нагрузка до 1200 rps
+- длительность до 5 минут
+- отчёт с метриками
+- waterfall анализ
+- рекомендации
+- pdf экспорт
+
+оплата через @CryptoBot
+
+начать: https://sds-s5j9.onrender.com"""
+
+BOT_STATUS_EMPTY = """`СТАТУС`
+
+активных тестов нет
+
+запустить новый:
+/test url
+
+или открой панель
+https://sds-s5j9.onrender.com"""
+
+
 async def bot_handle_message(msg):
     chat_id = str(msg["chat"]["id"])
     text = msg.get("text", "").strip()
 
     if text.startswith("/start"):
-        await tg_send(chat_id,
-            "Load Tester Bot\n\n"
-            "/test url — инструкция запуска\n"
-            "/status — статус\n"
-            "/help — помощь")
+        await tg_send(chat_id, BOT_MAIN_MENU)
         return
 
     if text.startswith("/help"):
-        await tg_send(chat_id,
-            "Оплата 5 USDT через панель.\nТестируем только свои сайты.")
+        await tg_send(chat_id, BOT_HELP)
         return
 
-    if text.startswith("/test "):
-        url = text[6:].strip()
-        if not url.startswith(("http://", "https://")):
-            url = "https://" + url
-        await tg_send(chat_id,
-            f"Тест: {url}\n\nОткрой панель, оплати 5 USDT, тест запустится.")
+    if text.startswith("/about"):
+        await tg_send(chat_id, BOT_ABOUT)
+        return
+
+    if text.startswith("/pricing") or text.startswith("/price"):
+        await tg_send(chat_id, BOT_PRICING)
         return
 
     if text.startswith("/status"):
-        await tg_send(chat_id, "Статус в веб-панели.")
+        await tg_send(chat_id, BOT_STATUS_EMPTY)
         return
 
-    await tg_send(chat_id, "Неизвестная команда. /help")
+    if text.startswith("/test"):
+        parts = text.split(maxsplit=1)
+        if len(parts) < 2 or not parts[1].strip():
+            await tg_send(chat_id,
+                "`ЗАПУСК ТЕСТА`\n\n"
+                "укажи url после команды\n\n"
+                "пример\n"
+                "`/test https://example.com`\n\n"
+                "после этого открой панель\n"
+                "оплати 5 usdt\n"
+                "тест запустится автоматически\n\n"
+                "https://sds-s5j9.onrender.com")
+            return
+
+        url = parts[1].strip()
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
+        # сохраняем цель для следующего запуска
+        TESTS.setdefault("_pending", {})[chat_id] = {"target": url, "ts": time.time()}
+
+        await tg_send(chat_id,
+            f"`ТЕСТ ПРИНЯТ`\n\n"
+            f"цель\n`{url}`\n\n"
+            f"дальше\n"
+            f"1. открой панель\n"
+            f"2. вставь url в поле target\n"
+            f"3. оплати 5 usdt\n"
+            f"4. тест запустится\n\n"
+            f"панель\nhttps://sds-s5j9.onrender.com")
+
+        # уведомляем админа
+        await tg_send(ADMIN_CHAT_ID,
+            f"`НОВАЯ ЗАЯВКА`\n\n"
+            f"chat_id `{chat_id}`\n"
+            f"url `{url}`")
+        return
+
+    # неизвестная команда
+    await tg_send(chat_id,
+        "`НЕИЗВЕСТНАЯ КОМАНДА`\n\n"
+        "доступные команды\n"
+        "/test url\n"
+        "/status\n"
+        "/pricing\n"
+        "/help\n"
+        "/about")
 
 
 async def bot_polling_loop():
     global bot_last_update_id
     print("TG bot polling started")
-    # ждём пока uvicorn поднимется
     await asyncio.sleep(3)
     while True:
         try:
@@ -163,6 +307,7 @@ async def cryptobot_create_invoice(amount_usd: float) -> dict:
         loop = asyncio.get_event_loop()
         resp = await loop.run_in_executor(None, lambda: urllib.request.urlopen(req, timeout=15))
         data = json.loads(resp.read().decode())
+        print("CryptoBot invoice OK:", data)
         return data
     except Exception as e:
         print("CryptoBot invoice error:", e)
@@ -181,6 +326,7 @@ async def cryptobot_check_invoice(invoice_id) -> dict:
         data = json.loads(resp.read().decode())
         return data
     except Exception as e:
+        print("CryptoBot check error:", e)
         return {"ok": False, "error": str(e)}
 
 
@@ -217,7 +363,7 @@ async def create_invoice():
     }
 
     await tg_send(ADMIN_CHAT_ID,
-        f"*Новый счёт создан*\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
+        f"`НОВЫЙ СЧЕТ`\n\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
 
     return {
         "invoice_id": invoice_id,
@@ -244,7 +390,7 @@ async def check_invoice(invoice_id: str):
                 p["paid"] = True
                 p["paid_at"] = time.time()
                 await tg_send(ADMIN_CHAT_ID,
-                    f"*ОПЛАТА ПОЛУЧЕНА*\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
+                    f"`ОПЛАТА ПОЛУЧЕНА`\n\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
                 return {"paid": True, "invoice_id": invoice_id}
 
     return {"paid": False, "invoice_id": invoice_id}
@@ -265,7 +411,7 @@ async def cryptobot_webhook(request: Request):
             PAYMENTS[invoice_id]["paid"] = True
             PAYMENTS[invoice_id]["paid_at"] = time.time()
         await tg_send(ADMIN_CHAT_ID,
-            f"*ОПЛАТА ПОЛУЧЕНА*\nID: `{invoice_id}`")
+            f"`ОПЛАТА ПОЛУЧЕНА`\n\nID: `{invoice_id}`")
 
     return {"ok": True}
 
@@ -446,10 +592,10 @@ async def run_k6(test_id: str, req: StartRequest):
             reqs = m.get("http_reqs", {}) or {}
             dur = m.get("http_req_duration", {}) or {}
             text = (
-                f"*Тест завершён*\n"
-                f"Цель: `{req.target}`\n"
-                f"RPS: `{round(reqs.get('rate', 0), 1)}`\n"
-                f"P95: `{round(dur.get('p(95)', 0))}ms`"
+                f"`ТЕСТ ЗАВЕРШЕН`\n\n"
+                f"цель `{req.target}`\n"
+                f"rps `{round(reqs.get('rate', 0), 1)}`\n"
+                f"p95 `{round(dur.get('p(95)', 0))}ms`"
             )
             await tg_send(req.tg_chat_id, text)
 
@@ -514,7 +660,7 @@ async def start(req: StartRequest):
 @app.get("/api/status/{test_id}")
 async def status(test_id: str):
     t = TESTS.get(test_id)
-    if not t:
+    if not t or not isinstance(t, dict) or "started" not in t:
         raise HTTPException(404, "test not found")
     elapsed = time.time() - t["started"]
     remaining = max(0, t["duration"] - elapsed)
@@ -535,7 +681,7 @@ async def status(test_id: str):
 @app.get("/api/stream/{test_id}")
 async def stream(test_id: str):
     t = TESTS.get(test_id)
-    if not t:
+    if not t or not isinstance(t, dict):
         raise HTTPException(404, "test not found")
     path = t.get("stream_file")
     if not path or not os.path.exists(path):
@@ -562,7 +708,7 @@ async def stream(test_id: str):
 @app.post("/api/stop/{test_id}")
 async def stop(test_id: str):
     t = TESTS.get(test_id)
-    if not t:
+    if not t or not isinstance(t, dict):
         raise HTTPException(404, "test not found")
     proc = t.get("proc")
     if proc and proc.returncode is None:
