@@ -7,9 +7,9 @@ import tempfile
 import re
 import urllib.request
 import urllib.parse
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 
@@ -23,15 +23,23 @@ app.add_middleware(
 )
 
 TESTS = {}
+PAYMENTS = {}
 
-TG_TOKEN = os.environ.get("TG_TOKEN", "8705350376:AAHwmgyNaoFgQfWPmb0_ZftRGAALz6t-qMU")
+# ============================================================
+# ТОКЕНЫ — ЗАМЕНИ ПОСЛЕ REVOKE
+# ============================================================
+CRYPTOBOT_TOKEN = "615562:AAFfEdoOPDh7YfRHQbNIXGEIZpnHFc7B9r4"
+TG_BOT_TOKEN = "8705350376:AAHwmgyNaoFgQfWPmb0_ZftRGAALz6t-qMU"
+ADMIN_CHAT_ID = "341311229"
+PRICE_USD = 5
+# ============================================================
 
 
 async def tg_send(chat_id, text):
     if not chat_id:
         return
     try:
-        url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+        url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
         data = urllib.parse.urlencode({
             "chat_id": chat_id, "text": text, "parse_mode": "Markdown"
         }).encode()
@@ -41,6 +49,48 @@ async def tg_send(chat_id, text):
         )
     except Exception as e:
         print("TG send failed:", e)
+
+
+async def cryptobot_create_invoice(amount_usd: float) -> dict:
+    try:
+        url = "https://pay.crypt.bot/api/createInvoice"
+        body = json.dumps({
+            "asset": "USDT",
+            "amount": str(amount_usd),
+            "description": "Load Tester — 1 test",
+            "expires_in": 3600,
+            "paid_btn_name": "openBot",
+            "paid_btn_url": "https://t.me/streiserbsssh_bot"
+        }).encode()
+        req = urllib.request.Request(
+            url, data=body,
+            headers={
+                "Crypto-Pay-API-Token": CRYPTOBOT_TOKEN,
+                "Content-Type": "application/json"
+            }
+        )
+        loop = asyncio.get_event_loop()
+        resp = await loop.run_in_executor(None, lambda: urllib.request.urlopen(req, timeout=15))
+        data = json.loads(resp.read().decode())
+        return data
+    except Exception as e:
+        print("CryptoBot invoice error:", e)
+        return {"ok": False, "error": str(e)}
+
+
+async def cryptobot_check_invoice(invoice_id) -> dict:
+    try:
+        url = f"https://pay.crypt.bot/api/getInvoices?invoice_ids={invoice_id}"
+        req = urllib.request.Request(
+            url,
+            headers={"Crypto-Pay-API-Token": CRYPTOBOT_TOKEN}
+        )
+        loop = asyncio.get_event_loop()
+        resp = await loop.run_in_executor(None, lambda: urllib.request.urlopen(req, timeout=10))
+        data = json.loads(resp.read().decode())
+        return data
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 
 class StartRequest(BaseModel):
@@ -56,19 +106,85 @@ class StartRequest(BaseModel):
     cookie: Optional[str] = None
     strict: bool = False
     tg_chat_id: Optional[str] = None
-    # для лестничного прогона
-    steps: Optional[list] = None  # например [50, 200, 500, 1200]
+    steps: Optional[list] = None
+    invoice_id: Optional[str] = None
+
+
+@app.post("/api/invoice")
+async def create_invoice():
+    result = await cryptobot_create_invoice(PRICE_USD)
+    if not result.get("ok"):
+        raise HTTPException(500, "invoice creation failed: " + str(result.get("error")))
+
+    inv = result["result"]
+    invoice_id = str(inv["invoice_id"])
+    PAYMENTS[invoice_id] = {
+        "paid": False,
+        "created": time.time(),
+        "amount": PRICE_USD,
+        "pay_url": inv.get("bot_invoice_url") or inv.get("pay_url"),
+    }
+
+    await tg_send(ADMIN_CHAT_ID,
+        f"*Новый счёт создан*\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
+
+    return {
+        "invoice_id": invoice_id,
+        "pay_url": PAYMENTS[invoice_id]["pay_url"],
+        "amount": PRICE_USD,
+    }
+
+
+@app.get("/api/invoice/check/{invoice_id}")
+async def check_invoice(invoice_id: str):
+    if invoice_id not in PAYMENTS:
+        raise HTTPException(404, "invoice not found")
+
+    p = PAYMENTS[invoice_id]
+    if p["paid"]:
+        return {"paid": True, "invoice_id": invoice_id}
+
+    result = await cryptobot_check_invoice(invoice_id)
+    if result.get("ok"):
+        items = result.get("result", {}).get("items", [])
+        if items:
+            status = items[0].get("status")
+            if status == "paid":
+                p["paid"] = True
+                p["paid_at"] = time.time()
+                await tg_send(ADMIN_CHAT_ID,
+                    f"*ОПЛАТА ПОЛУЧЕНА*\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
+                return {"paid": True, "invoice_id": invoice_id}
+
+    return {"paid": False, "invoice_id": invoice_id}
+
+
+@app.post("/api/cryptobot-webhook")
+async def cryptobot_webhook(request: Request):
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"ok": False})
+
+    update_type = data.get("update_type")
+    if update_type == "invoice_paid":
+        payload = data.get("payload", {})
+        invoice_id = str(payload.get("invoice_id"))
+        if invoice_id in PAYMENTS:
+            PAYMENTS[invoice_id]["paid"] = True
+            PAYMENTS[invoice_id]["paid_at"] = time.time()
+        await tg_send(ADMIN_CHAT_ID,
+            f"*ОПЛАТА ПОЛУЧЕНА (webhook)*\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
+
+    return {"ok": True}
 
 
 def build_stages(req: StartRequest):
-    """Возвращает stages для k6 или лестницу."""
     if req.steps:
-        # лестничный: каждый шаг идёт duration/len секунд, плавный переход
         step_time = max(5, req.duration // len(req.steps))
         stages = []
         for p in req.steps:
             stages.append(f"{{ duration: '{step_time}s', target: {p} }}")
-        # финальный откат до нуля
         stages.append(f"{{ duration: '5s', target: 0 }}")
         return "stages: [" + ", ".join(stages) + "],", max(req.steps)
 
@@ -113,7 +229,6 @@ def build_k6_script(req: StartRequest) -> str:
     body_json = json.dumps(req.body or "")
 
     stages_str, max_pps = build_stages(req)
-
     pre_vus = min(max(max_pps, 10), 3000)
     max_vus = min(max(max_pps * 3, 20), 6000)
 
@@ -176,7 +291,7 @@ def parse_k6_summary(raw: str) -> dict:
     return {}
 
 
-async def run_k6(test_id: str, req: StartRequest, is_ladder: bool = False):
+async def run_k6(test_id: str, req: StartRequest):
     script = build_k6_script(req)
     tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False)
     tmp.write(script)
@@ -201,10 +316,8 @@ async def run_k6(test_id: str, req: StartRequest, is_ladder: bool = False):
     TESTS[test_id]["stream_pos"] = 0
 
     stdout_data = b""
-    stderr_data = b""
-
     try:
-        stdout_data, stderr_data = await asyncio.wait_for(
+        stdout_data, _ = await asyncio.wait_for(
             proc.communicate(), timeout=req.duration * 3 + 120
         )
         TESTS[test_id]["status"] = "finished"
@@ -217,25 +330,18 @@ async def run_k6(test_id: str, req: StartRequest, is_ladder: bool = False):
         TESTS[test_id]["error"] = str(e)
     finally:
         stdout_text = stdout_data.decode('utf-8', errors='ignore') if stdout_data else ""
-        stderr_text = stderr_data.decode('utf-8', errors='ignore') if stderr_data else ""
-
-        print(f"=== k6 {test_id} STDOUT tail ===")
-        print(stdout_text[-2000:])
-
         summary = {}
         try:
             with open(summary_file, "r") as f:
                 summary = json.load(f)
         except Exception as e:
             print(f"summary file failed: {e}")
-
         if not summary or not summary.get("metrics"):
             summary = parse_k6_summary(stdout_text)
 
         TESTS[test_id]["summary"] = summary
         TESTS[test_id]["finished"] = time.time()
 
-        # мониторинг после теста — 30 секунд пинга
         if summary:
             TESTS[test_id]["recovery"] = await check_recovery(req.target, req.timeout)
 
@@ -258,13 +364,11 @@ async def run_k6(test_id: str, req: StartRequest, is_ladder: bool = False):
 
 
 async def check_recovery(target: str, timeout: int) -> dict:
-    """Пингуем цель 30 секунд после теста, засекаем когда ответит снова."""
     import urllib.request
     start = time.time()
     first_ok_at = None
     checks = 0
     ok_checks = 0
-
     for _ in range(30):
         await asyncio.sleep(1)
         checks += 1
@@ -282,7 +386,6 @@ async def check_recovery(target: str, timeout: int) -> dict:
                     first_ok_at = time.time() - start
         except Exception:
             pass
-
     return {
         "checks": checks,
         "ok_checks": ok_checks,
@@ -293,6 +396,11 @@ async def check_recovery(target: str, timeout: int) -> dict:
 
 @app.post("/api/start")
 async def start(req: StartRequest):
+    if req.invoice_id:
+        p = PAYMENTS.get(req.invoice_id)
+        if not p or not p.get("paid"):
+            raise HTTPException(402, "payment required")
+
     if not req.target.startswith(("http://", "https://")):
         req.target = "http://" + req.target
 
@@ -308,7 +416,7 @@ async def start(req: StartRequest):
         "started": time.time(),
         "is_ladder": bool(req.steps),
     }
-    asyncio.create_task(run_k6(test_id, req, is_ladder=bool(req.steps)))
+    asyncio.create_task(run_k6(test_id, req))
     return {"id": test_id}
 
 
@@ -335,14 +443,12 @@ async def status(test_id: str):
 
 @app.get("/api/stream/{test_id}")
 async def stream(test_id: str):
-    """Возвращает новые строки из json-out k6 с последнего запроса."""
     t = TESTS.get(test_id)
     if not t:
         raise HTTPException(404, "test not found")
     path = t.get("stream_file")
     if not path or not os.path.exists(path):
         return {"lines": [], "pos": 0}
-
     pos = t.get("stream_pos", 0)
     lines = []
     try:
@@ -359,8 +465,6 @@ async def stream(test_id: str):
         t["stream_pos"] = new_pos
     except Exception as e:
         return {"lines": [], "pos": pos, "error": str(e)}
-
-    # чтобы не раздувать ответ — только последние 200
     return {"lines": lines[-200:], "pos": t["stream_pos"]}
 
 
@@ -384,4 +488,4 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"ok": True, "tg_configured": TG_TOKEN != "PASTE_YOUR_BOT_TOKEN_HERE"}
+    return {"ok": True}
