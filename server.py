@@ -34,6 +34,27 @@ ADMIN_CHAT_ID = "341311229"
 PRICE_USD = 5
 # ============================================================
 
+# ============================================================
+# TELEGRAM BOT — встроен в основной процесс
+# ============================================================
+bot_last_update_id = 0
+bot_task = None
+
+
+def tg_api(method, data=None):
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/{method}"
+    if data:
+        data = urllib.parse.urlencode(data).encode()
+        req = urllib.request.Request(url, data=data)
+    else:
+        req = urllib.request.Request(url)
+    try:
+        resp = urllib.request.urlopen(req, timeout=30)
+        return json.loads(resp.read().decode())
+    except Exception as e:
+        print(f"tg_api {method} failed:", e)
+        return {"ok": False}
+
 
 async def tg_send(chat_id, text):
     if not chat_id:
@@ -50,6 +71,76 @@ async def tg_send(chat_id, text):
     except Exception as e:
         print("TG send failed:", e)
 
+
+async def bot_handle_message(msg):
+    chat_id = str(msg["chat"]["id"])
+    text = msg.get("text", "").strip()
+
+    if text.startswith("/start"):
+        await tg_send(chat_id,
+            "Load Tester Bot\n\n"
+            "/test url — инструкция запуска\n"
+            "/status — статус\n"
+            "/help — помощь")
+        return
+
+    if text.startswith("/help"):
+        await tg_send(chat_id,
+            "Оплата 5 USDT через панель.\nТестируем только свои сайты.")
+        return
+
+    if text.startswith("/test "):
+        url = text[6:].strip()
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+        await tg_send(chat_id,
+            f"Тест: {url}\n\nОткрой панель, оплати 5 USDT, тест запустится.")
+        return
+
+    if text.startswith("/status"):
+        await tg_send(chat_id, "Статус в веб-панели.")
+        return
+
+    await tg_send(chat_id, "Неизвестная команда. /help")
+
+
+async def bot_polling_loop():
+    global bot_last_update_id
+    print("TG bot polling started")
+    # ждём пока uvicorn поднимется
+    await asyncio.sleep(3)
+    while True:
+        try:
+            res = await asyncio.get_event_loop().run_in_executor(
+                None, lambda: tg_api("getUpdates", {
+                    "offset": bot_last_update_id + 1,
+                    "timeout": 25
+                })
+            )
+            if res.get("ok"):
+                for upd in res.get("result", []):
+                    bot_last_update_id = upd["update_id"]
+                    if "message" in upd:
+                        try:
+                            await bot_handle_message(upd["message"])
+                        except Exception as e:
+                            print("bot handle error:", e)
+        except Exception as e:
+            print("bot poll error:", e)
+        await asyncio.sleep(1)
+
+
+@app.on_event("startup")
+async def startup_event():
+    global bot_task
+    if TG_BOT_TOKEN and TG_BOT_TOKEN != "PASTE_YOUR_BOT_TOKEN_HERE":
+        bot_task = asyncio.create_task(bot_polling_loop())
+        print("Bot task scheduled")
+
+
+# ============================================================
+# CRYPTOBOT
+# ============================================================
 
 async def cryptobot_create_invoice(amount_usd: float) -> dict:
     try:
@@ -174,7 +265,7 @@ async def cryptobot_webhook(request: Request):
             PAYMENTS[invoice_id]["paid"] = True
             PAYMENTS[invoice_id]["paid_at"] = time.time()
         await tg_send(ADMIN_CHAT_ID,
-            f"*ОПЛАТА ПОЛУЧЕНА (webhook)*\nID: `{invoice_id}`\nСумма: `{PRICE_USD} USDT`")
+            f"*ОПЛАТА ПОЛУЧЕНА*\nID: `{invoice_id}`")
 
     return {"ok": True}
 
@@ -488,4 +579,4 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"ok": True}
+    return {"ok": True, "bot_running": bot_task is not None and not bot_task.done()}
